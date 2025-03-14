@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Code2, Users, Trophy, Target } from "lucide-react";
-import Image from "next/image";
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Code2, Users, Trophy, Target } from 'lucide-react';
+import Image from 'next/image';
 
 export default function About() {
   return (
@@ -16,10 +16,13 @@ export default function About() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">About CodeCraft</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              About FMT Software Solutions
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We're on a mission to empower businesses and developers with premium software solutions
-              and expert training that drives innovation and success.
+              We're on a mission to empower businesses and developers with
+              premium software solutions and expert training that drives
+              innovation and success.
             </p>
           </div>
 
@@ -33,8 +36,9 @@ export default function About() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  To provide cutting-edge software solutions and comprehensive training that helps
-                  businesses and individuals thrive in the digital age.
+                  To provide cutting-edge software solutions and comprehensive
+                  training that helps businesses and individuals thrive in the
+                  digital age.
                 </p>
               </CardContent>
             </Card>
@@ -48,8 +52,9 @@ export default function About() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  A diverse group of passionate developers, designers, and educators committed to
-                  delivering excellence in every project and training session.
+                  A diverse group of passionate developers, designers, and
+                  educators committed to delivering excellence in every project
+                  and training session.
                 </p>
               </CardContent>
             </Card>
@@ -63,8 +68,8 @@ export default function About() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Innovation, quality, and customer success are at the heart of everything we do,
-                  driving our commitment to excellence.
+                  Innovation, quality, and customer success are at the heart of
+                  everything we do, driving our commitment to excellence.
                 </p>
               </CardContent>
             </Card>
@@ -78,14 +83,15 @@ export default function About() {
             >
               <h2 className="text-3xl font-bold mb-4">Our Story</h2>
               <p className="text-muted-foreground mb-4">
-                Founded in 2020, CodeCraft emerged from a vision to bridge the gap between premium
-                software solutions and accessible learning resources. We believe that great software
-                should be accompanied by great education.
+                Founded in 2020, FMT Software Solutions emerged from a vision to
+                bridge the gap between premium software solutions and accessible
+                learning resources. We believe that great software should be
+                accompanied by great education.
               </p>
               <p className="text-muted-foreground">
-                Today, we serve thousands of customers worldwide, providing both enterprise-grade
-                software and comprehensive training programs that empower the next generation of
-                tech leaders.
+                Today, we serve thousands of customers worldwide, providing both
+                enterprise-grade software and comprehensive training programs
+                that empower the next generation of tech leaders.
               </p>
             </motion.div>
             <motion.div

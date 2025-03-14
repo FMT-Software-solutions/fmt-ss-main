@@ -1,11 +1,24 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Download, GraduationCap, Star, Users, Zap } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  BookOpen,
+  Download,
+  GraduationCap,
+  Star,
+  Users,
+  Zap,
+} from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -23,7 +36,8 @@ export default function Home() {
               Transform Your Business with Premium Software Solutions
             </h1>
             <p className="mt-6 text-lg text-muted-foreground">
-              One-time purchases, free resources, and expert training to help your business thrive in the digital age.
+              One-time purchases, free resources, and expert training to help
+              your business thrive in the digital age.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <Button size="lg" asChild>
@@ -46,7 +60,9 @@ export default function Home() {
       {/* Featured Apps */}
       <section className="py-20">
         <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-12">Featured Software Solutions</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Featured Software Solutions
+          </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featuredApps.map((app, index) => (
               <motion.div
@@ -86,7 +102,9 @@ export default function Home() {
       {/* Why Choose Us */}
       <section className="py-20 bg-muted">
         <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose CodeCraft?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Why Choose FMT Software Solutions?
+          </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <motion.div
@@ -113,7 +131,8 @@ export default function Home() {
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
             <p className="text-muted-foreground mb-8">
-              Subscribe to our newsletter for updates on new software releases, free resources, and upcoming training sessions.
+              Subscribe to our newsletter for updates on new software releases,
+              free resources, and upcoming training sessions.
             </p>
             <form className="flex gap-4 max-w-md mx-auto">
               <input
@@ -132,42 +151,47 @@ export default function Home() {
 
 const featuredApps = [
   {
-    id: "project-manager-pro",
-    title: "Project Manager Pro",
-    description: "Streamline your project management with our powerful solution",
+    id: 'project-manager-pro',
+    title: 'Project Manager Pro',
+    description:
+      'Streamline your project management with our powerful solution',
     price: 299,
-    image: "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=800&auto=format&fit=crop&q=60"
+    image:
+      'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=800&auto=format&fit=crop&q=60',
   },
   {
-    id: "data-analyzer",
-    title: "Data Analyzer",
-    description: "Transform your data into actionable insights",
+    id: 'data-analyzer',
+    title: 'Data Analyzer',
+    description: 'Transform your data into actionable insights',
     price: 199,
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60"
+    image:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
   },
   {
-    id: "secure-vault",
-    title: "Secure Vault",
-    description: "Enterprise-grade security for your sensitive data",
+    id: 'secure-vault',
+    title: 'Secure Vault',
+    description: 'Enterprise-grade security for your sensitive data',
     price: 249,
-    image: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&auto=format&fit=crop&q=60"
-  }
+    image:
+      'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&auto=format&fit=crop&q=60',
+  },
 ];
 
 const features = [
   {
-    title: "One-Time Purchase",
-    description: "No recurring fees or hidden costs. Pay once, own forever.",
-    icon: <Zap className="h-6 w-6 text-primary" />
+    title: 'One-Time Purchase',
+    description: 'No recurring fees or hidden costs. Pay once, own forever.',
+    icon: <Zap className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Free Resources",
-    description: "Access a library of free tools and resources to get started.",
-    icon: <Download className="h-6 w-6 text-primary" />
+    title: 'Free Resources',
+    description: 'Access a library of free tools and resources to get started.',
+    icon: <Download className="h-6 w-6 text-primary" />,
   },
   {
-    title: "Expert Training",
-    description: "Learn from industry experts through our comprehensive training programs.",
-    icon: <GraduationCap className="h-6 w-6 text-primary" />
-  }
+    title: 'Expert Training',
+    description:
+      'Learn from industry experts through our comprehensive training programs.',
+    icon: <GraduationCap className="h-6 w-6 text-primary" />,
+  },
 ];

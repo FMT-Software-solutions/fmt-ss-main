@@ -22,7 +22,7 @@ A modern web application built with Next.js 15, React 19, TypeScript, Tailwind C
 
 ```bash
 git clone https://github.com/FMT-Software-solutions/fmt-ss-main
-cd codecraft-solutions
+cd fmt-ss-main
 ```
 
 2. Install dependencies:
