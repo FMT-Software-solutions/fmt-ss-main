@@ -1,20 +1,30 @@
-import PaymentClient from './payment-client';
 import { workshops } from '../../workshops';
+import PaymentClient from './components/PaymentClient';
 
-export default function PaymentPage({ 
+export default async function PaymentPage({
   params,
-  searchParams 
-}: { 
-  params: { workshopId: string },
-  searchParams: { data: string }
+  searchParams,
+}: {
+  params: Promise<{ workshopId: string }> & { workshopId: string };
+  searchParams: Promise<{ data: string }> & { data: string };
 }) {
-  const workshop = workshops.find(w => w.id === params.workshopId);
-  
-  if (!workshop || !searchParams.data) {
+  // Resolve the promises
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+
+  // Access the values
+  const workshopId = resolvedParams.workshopId;
+  const data = resolvedSearchParams.data;
+
+  const workshop = workshops.find((w) => w.id === workshopId);
+
+  if (!workshop || !data) {
     return null;
   }
 
-  const registrationData = JSON.parse(decodeURIComponent(searchParams.data));
+  const registrationData = JSON.parse(decodeURIComponent(data));
 
-  return <PaymentClient workshop={workshop} registrationData={registrationData} />;
+  return (
+    <PaymentClient workshop={workshop} registrationData={registrationData} />
+  );
 }

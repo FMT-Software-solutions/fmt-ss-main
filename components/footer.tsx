@@ -1,7 +1,26 @@
 import Link from 'next/link';
 import { Code2 } from 'lucide-react';
 
+// Footer links data - defined outside component
+const footerLinks = {
+  products: [
+    { href: '/store', label: 'Software Store' },
+    { href: '/free-apps', label: 'Free Apps' },
+  ],
+  training: [
+    { href: '/training', label: 'Workshops' },
+    { href: '/training/archive', label: 'Training Archive' },
+  ],
+  company: [
+    { href: '/about', label: 'About Us' },
+    { href: '/contact', label: 'Contact' },
+  ],
+};
+
 export default function Footer() {
+  // Current year calculation is done during render
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="w-full border-t bg-background">
       <div className="container py-10">
@@ -16,77 +35,45 @@ export default function Footer() {
               training.
             </p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold">Products</h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  href="/store"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Software Store
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/free-apps"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Free Apps
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Training</h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  href="/training"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Workshops
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/training/archive"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Training Archive
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Company</h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
+
+          <FooterLinkSection title="Products" links={footerLinks.products} />
+          <FooterLinkSection title="Training" links={footerLinks.training} />
+          <FooterLinkSection title="Company" links={footerLinks.company} />
         </div>
+
         <div className="mt-10 border-t pt-8">
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} FMT Software Solutions. All rights
-            reserved.
+            © {currentYear} FMT Software Solutions. All rights reserved.
           </p>
         </div>
       </div>
     </footer>
+  );
+}
+
+// Extracted component for footer link sections
+function FooterLinkSection({
+  title,
+  links,
+}: {
+  title: string;
+  links: Array<{ href: string; label: string }>;
+}) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <ul className="mt-4 space-y-2">
+        {links.map(({ href, label }) => (
+          <li key={href}>
+            <Link
+              href={href}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

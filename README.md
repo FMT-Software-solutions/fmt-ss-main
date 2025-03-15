@@ -28,12 +28,11 @@ cd fmt-ss-main
 2. Install dependencies:
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
-> Note: We use `--legacy-peer-deps` flag to handle React 19 compatibility with some dependencies that haven't officially updated their peer dependencies yet.
 
-3. Run the development server:
+1. Run the development server:
 
 ```bash
 npm run dev
@@ -108,8 +107,7 @@ The project uses Tailwind CSS with a custom configuration in `tailwind.config.ts
 
 Some dependencies haven't officially updated their peer dependencies to support React 19 yet. We use the following workarounds:
 
-1. Using `--legacy-peer-deps` flag during installation
-2. Adding overrides in `package.json` for specific packages:
+1. Adding overrides in `package.json` for specific packages:
 
 ```json
 "overrides": {

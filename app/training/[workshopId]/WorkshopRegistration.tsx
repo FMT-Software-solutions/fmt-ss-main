@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar, Clock, GraduationCap, Users } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Calendar, Clock, GraduationCap, Users } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { Workshop } from '../workshops';
 
 type RegistrationData = {
@@ -18,29 +18,37 @@ type RegistrationData = {
   email: string;
   phone: string;
   company?: string;
-  experience: "beginner" | "intermediate" | "advanced";
+  experience: 'beginner' | 'intermediate' | 'advanced';
 };
 
-export default function WorkshopRegistrationClient({ workshop }: { workshop: Workshop }) {
+export default function WorkshopRegistration({
+  workshop,
+}: {
+  workshop: Workshop;
+}) {
   const router = useRouter();
   const [formData, setFormData] = useState<RegistrationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    experience: "beginner"
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    experience: 'beginner',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (workshop.price > 0) {
       // Redirect to payment page with workshop and registration details
-      router.push(`/training/${workshop.id}/payment?data=${encodeURIComponent(JSON.stringify(formData))}`);
+      router.push(
+        `/training/${workshop.id}/payment?data=${encodeURIComponent(
+          JSON.stringify(formData)
+        )}`
+      );
     } else {
       // Handle free workshop registration
-      console.log("Free workshop registration:", formData);
+      console.log('Free workshop registration:', formData);
       // TODO: Implement registration confirmation
     }
   };
@@ -63,7 +71,7 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                   className="object-cover"
                 />
               </div>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Workshop Details</CardTitle>
@@ -118,7 +126,12 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                         <Input
                           id="firstName"
                           value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              firstName: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -127,7 +140,12 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                         <Input
                           id="lastName"
                           value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              lastName: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -139,7 +157,9 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -150,7 +170,9 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                         id="phone"
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -160,7 +182,9 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                       <Input
                         id="company"
                         value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, company: e.target.value })
+                        }
                       />
                     </div>
 
@@ -168,15 +192,19 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                       <Label>Experience Level</Label>
                       <RadioGroup
                         value={formData.experience}
-                        onValueChange={(value: "beginner" | "intermediate" | "advanced") => 
-                          setFormData({ ...formData, experience: value })}
+                        onValueChange={(
+                          value: 'beginner' | 'intermediate' | 'advanced'
+                        ) => setFormData({ ...formData, experience: value })}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="beginner" id="beginner" />
                           <Label htmlFor="beginner">Beginner</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="intermediate" id="intermediate" />
+                          <RadioGroupItem
+                            value="intermediate"
+                            id="intermediate"
+                          />
                           <Label htmlFor="intermediate">Intermediate</Label>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -187,9 +215,9 @@ export default function WorkshopRegistrationClient({ workshop }: { workshop: Wor
                     </div>
 
                     <Button type="submit" className="w-full">
-                      {workshop.price > 0 
+                      {workshop.price > 0
                         ? `Proceed to Payment ($${workshop.price})`
-                        : "Register for Free"}
+                        : 'Register for Free'}
                     </Button>
                   </form>
                 </CardContent>
