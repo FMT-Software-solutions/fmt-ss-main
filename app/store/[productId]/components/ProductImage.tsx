@@ -2,10 +2,34 @@
 
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import type { Product } from '../products';
+
+// Define the ExtendedProduct type to match the one in ProductPageClient
+interface ExtendedProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  tags: string[];
+  features: string[];
+  requirements: {
+    os: string[];
+    processor: string;
+    memory: string;
+    storage: string;
+  };
+  platforms?: Array<{
+    name: string;
+    slug: { current: string };
+    icon: string;
+  }>;
+  downloadUrl?: string | null;
+  webAppUrl?: string | null;
+}
 
 interface ProductImageProps {
-  product: Product;
+  product: ExtendedProduct;
 }
 
 export default function ProductImage({ product }: ProductImageProps) {

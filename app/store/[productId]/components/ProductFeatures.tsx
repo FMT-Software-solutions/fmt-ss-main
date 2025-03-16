@@ -2,10 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-import type { Product } from '../products';
 
 interface ProductFeaturesProps {
-  features: Product['features'];
+  features: string[];
 }
 
 export default function ProductFeatures({ features }: ProductFeaturesProps) {

@@ -1,10 +1,16 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Product } from '../products';
+
+interface Requirements {
+  os: string[];
+  processor: string;
+  memory: string;
+  storage: string;
+}
 
 interface ProductRequirementsProps {
-  requirements: Product['requirements'];
+  requirements: Requirements;
 }
 
 export default function ProductRequirements({

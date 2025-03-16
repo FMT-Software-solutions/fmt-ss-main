@@ -10,11 +10,10 @@ export function generateStaticParams() {
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ productId: string }> & { productId: string };
+  params: Promise<{ productId: string }>;
 }) {
   // Resolve the promise
-  const resolvedParams = await params;
-  const productId = resolvedParams.productId;
+  const { productId } = await params;
 
   const product = products.find((p) => p.id === productId);
 
@@ -22,5 +21,15 @@ export default async function ProductPage({
     return null;
   }
 
-  return <ProductPageClient product={product} />;
+  // Transform the product to match the expected format for the client component
+  const transformedProduct = {
+    ...product,
+    // Ensure platforms is an array even if it's not defined
+    platforms: product.platforms || [],
+    // Ensure downloadUrl and webAppUrl are defined
+    downloadUrl: product.downloadUrl || null,
+    webAppUrl: product.webAppUrl || null,
+  };
+
+  return <ProductPageClient product={transformedProduct} />;
 }

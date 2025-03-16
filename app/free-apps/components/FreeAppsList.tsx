@@ -11,50 +11,8 @@ import {
 } from '@/components/ui/card';
 import { Download, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
-
-// Free apps data moved outside component to avoid recreation on each render
-const freeApps = [
-  {
-    id: 'task-tracker',
-    title: 'Task Tracker',
-    description:
-      'Simple and effective task management tool for individuals and small teams',
-    image:
-      'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&auto=format&fit=crop&q=60',
-    features: [
-      'Task organization',
-      'Due date tracking',
-      'Priority levels',
-      'Progress monitoring',
-    ],
-  },
-  {
-    id: 'code-snippet-manager',
-    title: 'Code Snippet Manager',
-    description: 'Store and organize your frequently used code snippets',
-    image:
-      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop&q=60',
-    features: [
-      'Syntax highlighting',
-      'Tags and categories',
-      'Search functionality',
-      'Copy to clipboard',
-    ],
-  },
-  {
-    id: 'time-tracker',
-    title: 'Time Tracker',
-    description: 'Track time spent on projects and tasks',
-    image:
-      'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=800&auto=format&fit=crop&q=60',
-    features: [
-      'Project time tracking',
-      'Activity logs',
-      'Basic reporting',
-      'Export data',
-    ],
-  },
-];
+import Link from 'next/link';
+import { freeApps } from '../data';
 
 export default function FreeAppsList() {
   return (
@@ -90,7 +48,7 @@ function AppCard({ app, index }: { app: (typeof freeApps)[0]; index: number }) {
         <CardContent className="flex-grow">
           <h3 className="font-semibold mb-2">Key Features:</h3>
           <ul className="space-y-2 mb-6">
-            {app.features.map((feature, i) => (
+            {app.features.slice(0, 4).map((feature, i) => (
               <li
                 key={i}
                 className="flex items-center text-sm text-muted-foreground"
@@ -101,13 +59,23 @@ function AppCard({ app, index }: { app: (typeof freeApps)[0]; index: number }) {
             ))}
           </ul>
           <div className="flex gap-3 mt-auto">
-            <Button className="flex-1">
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Learn More
+            {app.downloadUrl && (
+              <Button asChild className="flex-1">
+                <Link
+                  href={app.downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" asChild className="flex-1">
+              <Link href={`/free-apps/${app.id}`}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Learn More
+              </Link>
             </Button>
           </div>
         </CardContent>

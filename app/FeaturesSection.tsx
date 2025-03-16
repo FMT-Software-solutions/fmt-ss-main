@@ -1,25 +1,27 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Download, GraduationCap, Zap } from 'lucide-react';
+import { Lightbulb, Code, GraduationCap } from 'lucide-react';
 import React from 'react';
 
 // Features data moved outside component to avoid recreation on each render
 const features = [
   {
-    title: 'One-Time Purchase',
-    description: 'No recurring fees or hidden costs. Pay once, own forever.',
-    icon: <Zap className="h-6 w-6 text-primary" />,
+    title: 'Public Projects',
+    description:
+      'Building innovative solutions that address real challenges across various sectors.',
+    icon: <Lightbulb className="h-6 w-6 text-primary" />,
   },
   {
-    title: 'Free Resources',
-    description: 'Access a library of free tools and resources to get started.',
-    icon: <Download className="h-6 w-6 text-primary" />,
+    title: 'Custom Software',
+    description:
+      'Premium and free software solutions tailored for businesses and individuals.',
+    icon: <Code className="h-6 w-6 text-primary" />,
   },
   {
     title: 'Expert Training',
     description:
-      'Learn from industry experts through our comprehensive training programs.',
+      'Comprehensive training programs and events to develop software development skills.',
     icon: <GraduationCap className="h-6 w-6 text-primary" />,
   },
 ];
@@ -28,9 +30,7 @@ export default function FeaturesSection() {
   return (
     <section className="py-20 bg-muted">
       <div className="container">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Why Choose FMT Software Solutions?
-        </h2>
+        <h2 className="text-3xl font-bold text-center mb-12">What We Offer</h2>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />

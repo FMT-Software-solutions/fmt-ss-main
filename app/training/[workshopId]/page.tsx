@@ -4,13 +4,12 @@ import { workshops } from '../workshops';
 import WorkshopRegistration from './components/WorkshopRegistration';
 
 type Props = {
-  params: Promise<{ workshopId: string }> & { workshopId: string };
+  params: Promise<{ workshopId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Resolve the promise
-  const resolvedParams = await params;
-  const workshopId = resolvedParams.workshopId;
+  const { workshopId } = await params;
 
   const workshop = workshops.find((w) => w.id === workshopId);
 
@@ -34,8 +33,7 @@ export function generateStaticParams() {
 
 export default async function WorkshopPage({ params }: Props) {
   // Resolve the promise
-  const resolvedParams = await params;
-  const workshopId = resolvedParams.workshopId;
+  const { workshopId } = await params;
 
   const workshop = workshops.find((w) => w.id === workshopId);
 

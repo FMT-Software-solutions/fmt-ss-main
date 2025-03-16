@@ -5,20 +5,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/mode-toggle';
+import { ModeToggle } from '@/components/ModeToggle';
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
-import { Code2, BookOpen, Download, GraduationCap } from 'lucide-react';
-import { MobileMenu } from '@/components/mobile-menu';
+import { Code2, BookOpen, Download, GraduationCap, Lightbulb } from 'lucide-react';
+import { MobileMenu } from '@/components/MobileMenu';
 import type { NavigationLink } from '@/types/navigation';
 
 // Navigation links data - extracted to avoid recreating
 const navigationLinks: NavigationLink[] = [
-  { href: '/store', icon: BookOpen, label: 'Store' },
+  { href: '/projects', icon: Lightbulb, label: 'Public Projects' },
+  { href: '/store', icon: BookOpen, label: 'Premium Apps' },
   { href: '/free-apps', icon: Download, label: 'Free Apps' },
   { href: '/training', icon: GraduationCap, label: 'Training' },
 ];
@@ -30,9 +31,18 @@ export default function Navigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
-          <Code2 className="h-6 w-6" />
-          <span className="font-bold">FMT Software Solutions</span>
+        <Link href="/" className="flex items-end space-x-2">
+          <img
+            src={`/fmt-logo.png`}
+            alt="FMT Logo"
+            className="h-8 w-auto dark:hidden"
+          />
+          <img
+            src="/fmt-logo-white.png"
+            alt="FMT Logo"
+            className="hidden h-8 w-auto dark:block"
+          />
+          <span className="font-bold">Software Solutions</span>
         </Link>
 
         {/* Desktop Navigation */}

@@ -4,12 +4,13 @@ import { Code2 } from 'lucide-react';
 // Footer links data - defined outside component
 const footerLinks = {
   products: [
-    { href: '/store', label: 'Software Store' },
+    { href: '/projects', label: 'Public Projects' },
+    { href: '/store', label: 'Premium Apps' },
     { href: '/free-apps', label: 'Free Apps' },
   ],
   training: [
-    { href: '/training', label: 'Workshops' },
-    { href: '/training/archive', label: 'Training Archive' },
+    { href: '/training', label: 'Training Programs' },
+    { href: '/training/archive', label: 'Events' },
   ],
   company: [
     { href: '/about', label: 'About Us' },
@@ -27,16 +28,27 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <div className="flex items-center space-x-2">
-              <Code2 className="h-6 w-6" />
-              <span className="font-bold">FMT Software Solutions</span>
+              <Link href="/" className="flex items-end space-x-2">
+                <img
+                  src={`/fmt-logo.png`}
+                  alt="FMT Logo"
+                  className="h-8 w-auto dark:hidden"
+                />
+                <img
+                  src="/fmt-logo-white.png"
+                  alt="FMT Logo"
+                  className="hidden h-8 w-auto dark:block"
+                />
+                <span className="font-bold">Software Solutions</span>
+              </Link>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Empowering businesses with premium software solutions and expert
-              training.
+              Building innovative software solutions that address real
+              challenges and accelerate growth.
             </p>
           </div>
 
-          <FooterLinkSection title="Products" links={footerLinks.products} />
+          <FooterLinkSection title="Solutions" links={footerLinks.products} />
           <FooterLinkSection title="Training" links={footerLinks.training} />
           <FooterLinkSection title="Company" links={footerLinks.company} />
         </div>
