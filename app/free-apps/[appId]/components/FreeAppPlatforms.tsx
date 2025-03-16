@@ -1,23 +1,25 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Globe, Monitor, Smartphone } from 'lucide-react';
-import { FreeApp } from '../../data';
+import { IFreeApp } from '@/types/free-app';
 
 interface FreeAppPlatformsProps {
-  platforms: FreeApp['platforms'];
+  platforms: IFreeApp['platforms'];
 }
+
+// Platform icons mapping
+const platformIcons: Record<string, React.ReactNode> = {
+  web: <Globe className="h-4 w-4 mr-1" />,
+  desktop: <Monitor className="h-4 w-4 mr-1" />,
+  mobile: <Smartphone className="h-4 w-4 mr-1" />,
+};
 
 export default function FreeAppPlatforms({ platforms }: FreeAppPlatformsProps) {
   if (!platforms || platforms.length === 0) {
     return null;
   }
-
-  const platformIcons = {
-    web: Globe,
-    desktop: Monitor,
-    mobile: Smartphone,
-  };
 
   return (
     <Card>
@@ -25,19 +27,17 @@ export default function FreeAppPlatforms({ platforms }: FreeAppPlatformsProps) {
         <CardTitle>Available Platforms</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-4">
-          {platforms.map((platform, index) => {
-            const IconComponent =
-              platform.icon &&
-              platformIcons[platform.icon as keyof typeof platformIcons];
-
-            return (
-              <div key={index} className="flex items-center gap-2">
-                {IconComponent && <IconComponent className="h-5 w-5" />}
-                <span>{platform.name}</span>
-              </div>
-            );
-          })}
+        <div className="flex flex-wrap gap-3">
+          {platforms.map((platform) => (
+            <Badge
+              key={platform.slug.current}
+              variant="outline"
+              className="flex items-center text-base py-2 px-3"
+            >
+              {platformIcons[platform.icon] || null}
+              {platform.name}
+            </Badge>
+          ))}
         </div>
       </CardContent>
     </Card>

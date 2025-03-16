@@ -13,19 +13,20 @@ import { Download, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { freeApps } from '../data';
+import { IFreeApp } from '@/types/free-app';
 
 export default function FreeAppsList() {
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
       {freeApps.map((app, index) => (
-        <AppCard key={app.id} app={app} index={index} />
+        <AppCard key={app._id} app={app} index={index} />
       ))}
     </div>
   );
 }
 
 // Extracted to a separate component for better organization
-function AppCard({ app, index }: { app: (typeof freeApps)[0]; index: number }) {
+function AppCard({ app, index }: { app: IFreeApp; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -36,14 +37,14 @@ function AppCard({ app, index }: { app: (typeof freeApps)[0]; index: number }) {
         <CardHeader>
           <div className="aspect-video relative rounded-lg overflow-hidden mb-4">
             <Image
-              src={app.image}
+              src={app.mainImage}
               alt={app.title}
               fill
               className="object-cover"
             />
           </div>
           <CardTitle>{app.title}</CardTitle>
-          <CardDescription>{app.description}</CardDescription>
+          <CardDescription>{app.shortDescription}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
           <h3 className="font-semibold mb-2">Key Features:</h3>

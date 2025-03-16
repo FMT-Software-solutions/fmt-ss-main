@@ -2,36 +2,30 @@
 
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { FreeApp } from '../../data';
+import { IFreeApp } from '@/types/free-app';
 
 interface FreeAppImageProps {
-  app: FreeApp;
+  app: IFreeApp;
 }
 
 export default function FreeAppImage({ app }: FreeAppImageProps) {
-  if (!app.image) {
-    return null;
-  }
-
   return (
-    <div className="relative rounded-lg overflow-hidden aspect-video">
-      <Image
-        src={app.image}
-        alt={app.title}
-        fill
-        className="object-cover"
-        priority
-      />
-
-      {app.tags && app.tags.length > 0 && (
-        <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-          {app.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} className="bg-background/80 backdrop-blur-sm">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      )}
+    <div>
+      <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
+        <Image
+          src={app.mainImage}
+          alt={app.title}
+          fill
+          className="object-cover"
+        />
+      </div>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {app.tags.map((tag) => (
+          <Badge key={tag} variant="secondary">
+            {tag}
+          </Badge>
+        ))}
+      </div>
     </div>
   );
 }

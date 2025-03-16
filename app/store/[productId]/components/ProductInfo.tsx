@@ -3,34 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Download, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-
-// Define the ExtendedProduct type to match the one in ProductPageClient
-interface ExtendedProduct {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  tags: string[];
-  features: string[];
-  requirements: {
-    os: string[];
-    processor: string;
-    memory: string;
-    storage: string;
-  };
-  platforms?: Array<{
-    name: string;
-    slug: { current: string };
-    icon: string;
-  }>;
-  downloadUrl?: string | null;
-  webAppUrl?: string | null;
-}
+import { IPremiumApp } from '@/types/premium-app';
 
 interface ProductInfoProps {
-  product: ExtendedProduct;
+  product: IPremiumApp;
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
@@ -40,7 +16,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     <div>
       <h1 className="text-4xl font-bold mb-4">{product.title}</h1>
       <p className="text-xl text-muted-foreground mb-6">
-        {product.description}
+        {product.shortDescription}
       </p>
       <div className="flex items-center gap-4 mb-8">
         {!isFreeApp ? (

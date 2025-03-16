@@ -1,45 +1,62 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface Requirements {
-  os: string[];
-  processor: string;
-  memory: string;
-  storage: string;
-}
+import { IPremiumApp } from '@/types/premium-app';
 
 interface ProductRequirementsProps {
-  requirements: Requirements;
+  requirements: IPremiumApp['requirements'];
 }
 
 export default function ProductRequirements({
   requirements,
 }: ProductRequirementsProps) {
+  if (!requirements) {
+    return null;
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>System Requirements</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="space-y-4">
+        {requirements.os && requirements.os.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Operating System</h3>
-            <ul className="list-disc list-inside text-muted-foreground">
-              {requirements.os.map((os, index) => (
-                <li key={index}>{os}</li>
-              ))}
-            </ul>
+            <h3 className="font-semibold mb-1">Operating System</h3>
+            <p className="text-muted-foreground">
+              {requirements.os.join(', ')}
+            </p>
           </div>
+        )}
+        {requirements.processor && (
           <div>
-            <h3 className="font-semibold mb-2">Hardware</h3>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>Processor: {requirements.processor}</li>
-              <li>Memory: {requirements.memory}</li>
-              <li>Storage: {requirements.storage}</li>
-            </ul>
+            <h3 className="font-semibold mb-1">Processor</h3>
+            <p className="text-muted-foreground">{requirements.processor}</p>
           </div>
-        </div>
+        )}
+        {requirements.memory && (
+          <div>
+            <h3 className="font-semibold mb-1">Memory</h3>
+            <p className="text-muted-foreground">{requirements.memory}</p>
+          </div>
+        )}
+        {requirements.storage && (
+          <div>
+            <h3 className="font-semibold mb-1">Storage</h3>
+            <p className="text-muted-foreground">{requirements.storage}</p>
+          </div>
+        )}
+        {requirements.additionalRequirements &&
+          requirements.additionalRequirements.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-1">Additional Requirements</h3>
+              <ul className="list-disc pl-5 text-muted-foreground">
+                {requirements.additionalRequirements.map((req, index) => (
+                  <li key={index}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          )}
       </CardContent>
     </Card>
   );

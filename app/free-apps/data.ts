@@ -1,19 +1,27 @@
+import { IFreeApp } from '@/types/free-app';
+
 // Free apps data with detailed information
-export const freeApps = [
+export const freeApps: IFreeApp[] = [
   {
+    _id: 'task-tracker',
     id: 'task-tracker',
     title: 'Task Tracker',
-    description:
+    slug: { current: 'task-tracker' },
+    shortDescription:
       'Simple and effective task management tool for individuals and small teams',
+    description: [
+      'Simple and effective task management tool for individuals and small teams',
+    ],
     longDescription:
       'Task Tracker is a lightweight yet powerful task management application designed to help individuals and small teams organize their work efficiently. With an intuitive interface and essential features, it provides everything you need to stay on top of your tasks without the complexity of enterprise solutions.',
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&auto=format&fit=crop&q=60',
     screenshots: [
       'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=800&auto=format&fit=crop&q=60',
     ],
+    sectors: ['Productivity'],
     category: 'Productivity',
     features: [
       'Task organization with custom categories',
@@ -41,18 +49,22 @@ export const freeApps = [
     price: 0,
   },
   {
+    _id: 'code-snippet-manager',
     id: 'code-snippet-manager',
     title: 'Code Snippet Manager',
-    description: 'Store and organize your frequently used code snippets',
+    slug: { current: 'code-snippet-manager' },
+    shortDescription: 'Store and organize your frequently used code snippets',
+    description: ['Store and organize your frequently used code snippets'],
     longDescription:
       'Code Snippet Manager is a developer-focused tool that helps you store, organize, and quickly access your frequently used code snippets. With support for multiple programming languages and powerful search capabilities, it streamlines your workflow and boosts productivity by eliminating the need to rewrite common code patterns.',
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop&q=60',
     screenshots: [
       'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&auto=format&fit=crop&q=60',
     ],
+    sectors: ['Development'],
     category: 'Development',
     features: [
       'Syntax highlighting for 40+ programming languages',
@@ -79,18 +91,22 @@ export const freeApps = [
     price: 0,
   },
   {
+    _id: 'time-tracker',
     id: 'time-tracker',
     title: 'Time Tracker',
-    description: 'Track time spent on projects and tasks',
+    slug: { current: 'time-tracker' },
+    shortDescription: 'Track time spent on projects and tasks',
+    description: ['Track time spent on projects and tasks'],
     longDescription:
       "Time Tracker is a simple yet effective tool for monitoring how you spend your time on various projects and tasks. Whether you're a freelancer billing clients, a team tracking project hours, or just someone looking to improve personal productivity, Time Tracker provides the insights you need to make better use of your time.",
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=800&auto=format&fit=crop&q=60',
     screenshots: [
       'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1600267204091-5c1ab8b10c02?w=800&auto=format&fit=crop&q=60',
       'https://images.unsplash.com/photo-1506784365847-bbad939e9335?w=800&auto=format&fit=crop&q=60',
     ],
+    sectors: ['Productivity'],
     category: 'Productivity',
     features: [
       'Project and task time tracking',
@@ -119,4 +135,4 @@ export const freeApps = [
   },
 ];
 
-export type FreeApp = (typeof freeApps)[0];
+export type FreeApp = IFreeApp;

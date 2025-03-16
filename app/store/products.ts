@@ -1,13 +1,22 @@
-export const products = [
+import { IPremiumApp } from '@/types/premium-app';
+
+export const products: IPremiumApp[] = [
   {
+    _id: 'project-manager-pro',
     id: 'project-manager-pro',
     title: 'Project Manager Pro',
-    description:
+    slug: { current: 'project-manager-pro' },
+    shortDescription:
       'Streamline your project management with our powerful solution',
+    description: [
+      'Streamline your project management with our powerful solution',
+    ],
     price: 299,
     category: 'Business',
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=800&auto=format&fit=crop&q=60',
+    screenshots: [],
+    sectors: ['Business'],
     tags: ['Project Management', 'Team Collaboration', 'Business'],
     features: [
       'Task Management & Organization',
@@ -33,14 +42,21 @@ export const products = [
     webAppUrl: 'https://example.com/app/project-manager-pro',
   },
   {
+    _id: 'data-analyzer',
     id: 'data-analyzer',
     title: 'Data Analyzer',
-    description:
+    slug: { current: 'data-analyzer' },
+    shortDescription:
       'Transform your data into actionable insights with advanced analytics',
+    description: [
+      'Transform your data into actionable insights with advanced analytics',
+    ],
     price: 199,
     category: 'Analytics',
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
+    screenshots: [],
+    sectors: ['Analytics'],
     tags: ['Analytics', 'Business Intelligence', 'Data'],
     features: [
       'Data Import & Export',
@@ -65,14 +81,21 @@ export const products = [
     webAppUrl: null,
   },
   {
+    _id: 'secure-vault',
     id: 'secure-vault',
     title: 'Secure Vault',
-    description:
+    slug: { current: 'secure-vault' },
+    shortDescription:
       'Enterprise-grade security for your sensitive data and documents',
+    description: [
+      'Enterprise-grade security for your sensitive data and documents',
+    ],
     price: 249,
     category: 'Security',
-    image:
+    mainImage:
       'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&auto=format&fit=crop&q=60',
+    screenshots: [],
+    sectors: ['Security'],
     tags: ['Security', 'Enterprise', 'Data Protection'],
     features: [
       'End-to-end Encryption',
@@ -100,4 +123,4 @@ export const products = [
   },
 ];
 
-export type Product = (typeof products)[0];
+export type Product = IPremiumApp;

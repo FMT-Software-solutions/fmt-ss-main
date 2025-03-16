@@ -3,11 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Download, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { FreeApp } from '../../data';
+import { IFreeApp } from '@/types/free-app';
 import { Badge } from '@/components/ui/badge';
 
 interface FreeAppInfoProps {
-  app: FreeApp;
+  app: IFreeApp;
 }
 
 export default function FreeAppInfo({ app }: FreeAppInfoProps) {
@@ -18,7 +18,9 @@ export default function FreeAppInfo({ app }: FreeAppInfoProps) {
         <Badge className="bg-green-500">Free</Badge>
       </div>
 
-      <p className="text-xl text-muted-foreground mb-6">{app.description}</p>
+      <p className="text-xl text-muted-foreground mb-6">
+        {app.shortDescription}
+      </p>
 
       {app.category && (
         <div className="mb-4">
@@ -56,7 +58,7 @@ export default function FreeAppInfo({ app }: FreeAppInfoProps) {
 
       {app.longDescription && (
         <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">About</h2>
+          <h2 className="text-2xl font-semibold mb-4">About</h2>
           <p className="text-muted-foreground">{app.longDescription}</p>
         </div>
       )}

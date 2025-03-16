@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { FreeApp } from '../../data';
+import { IFreeApp } from '@/types/free-app';
 import FreeAppImage from './FreeAppImage';
 import FreeAppInfo from './FreeAppInfo';
 import FreeAppFeatures from './FreeAppFeatures';
@@ -11,7 +12,7 @@ import FreeAppGallery from './FreeAppGallery';
 import { Badge } from '@/components/ui/badge';
 
 interface FreeAppPageClientProps {
-  app: FreeApp;
+  app: IFreeApp;
 }
 
 export default function FreeAppPageClient({ app }: FreeAppPageClientProps) {

@@ -8,34 +8,10 @@ import ProductRequirements from './ProductRequirements';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Globe, Monitor, Smartphone } from 'lucide-react';
-
-// Define the complete product type with all properties
-interface ExtendedProduct {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  tags: string[];
-  features: string[];
-  requirements: {
-    os: string[];
-    processor: string;
-    memory: string;
-    storage: string;
-  };
-  platforms?: Array<{
-    name: string;
-    slug: { current: string };
-    icon: string;
-  }>;
-  downloadUrl?: string | null;
-  webAppUrl?: string | null;
-}
+import { IPremiumApp } from '@/types/premium-app';
 
 interface ProductPageClientProps {
-  product: ExtendedProduct;
+  product: IPremiumApp;
 }
 
 // Platform icons

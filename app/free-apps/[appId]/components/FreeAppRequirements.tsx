@@ -1,10 +1,10 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FreeApp } from '../../data';
+import { IFreeApp } from '@/types/free-app';
 
 interface FreeAppRequirementsProps {
-  requirements: FreeApp['requirements'];
+  requirements: IFreeApp['requirements'];
 }
 
 export default function FreeAppRequirements({
@@ -20,13 +20,11 @@ export default function FreeAppRequirements({
         <CardTitle>System Requirements</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {requirements.os && (
+        {requirements.os && requirements.os.length > 0 && (
           <div>
             <h3 className="font-semibold mb-1">Operating System</h3>
             <p className="text-muted-foreground">
-              {Array.isArray(requirements.os)
-                ? requirements.os.join(', ')
-                : requirements.os}
+              {requirements.os.join(', ')}
             </p>
           </div>
         )}
@@ -51,6 +49,18 @@ export default function FreeAppRequirements({
             <p className="text-muted-foreground">{requirements.storage}</p>
           </div>
         )}
+
+        {requirements.additionalRequirements &&
+          requirements.additionalRequirements.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-1">Additional Requirements</h3>
+              <ul className="list-disc pl-5 text-muted-foreground">
+                {requirements.additionalRequirements.map((req, index) => (
+                  <li key={index}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          )}
       </CardContent>
     </Card>
   );
