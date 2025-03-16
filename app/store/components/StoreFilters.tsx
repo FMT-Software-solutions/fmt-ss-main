@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -51,6 +51,8 @@ export default function StoreFilters() {
           <SelectItem value="Business">Business</SelectItem>
           <SelectItem value="Analytics">Analytics</SelectItem>
           <SelectItem value="Security">Security</SelectItem>
+          <SelectItem value="Productivity">Productivity</SelectItem>
+          <SelectItem value="Development">Development</SelectItem>
         </SelectContent>
       </Select>
 

@@ -25,7 +25,11 @@ export default function FreeAppPageClient({ app }: FreeAppPageClientProps) {
           transition={{ duration: 0.5 }}
         >
           <div className="grid gap-8 md:grid-cols-2">
-            <FreeAppImage app={app} />
+            <FreeAppImage
+              mainImage={app.mainImage}
+              title={app.title}
+              tags={app.tags}
+            />
             <FreeAppInfo app={app} />
           </div>
 

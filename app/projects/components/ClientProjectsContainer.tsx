@@ -20,7 +20,6 @@ export default function ClientProjectsContainer({
 }: {
   projects: Project[];
 }) {
-  console.log(projects);
   const searchParams = useSearchParams();
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects);
 

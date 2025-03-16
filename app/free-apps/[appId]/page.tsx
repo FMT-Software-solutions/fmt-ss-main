@@ -1,21 +1,15 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { freeApps } from '../data';
 import FreeAppPageClient from './components/FreeAppPageClient';
-import { IFreeApp } from '@/types/free-app';
-
-export async function generateStaticParams() {
-  return freeApps.map((app) => ({
-    appId: app.id,
-  }));
-}
+import { getFreeAppBySlug } from '@/lib/sanity';
 
 export async function generateMetadata({
   params,
 }: {
-  params: { appId: string };
+  params: Promise<{ appId: string }>;
 }): Promise<Metadata> {
-  const app = freeApps.find((a) => a.id === params.appId);
+  const { appId } = await params;
+  const app = await getFreeAppBySlug(appId);
 
   if (!app) {
     return {
@@ -25,7 +19,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: app.title,
+    title: `${app.title} | FMT Software Solutions`,
     description: app.shortDescription,
   };
 }
@@ -33,18 +27,14 @@ export async function generateMetadata({
 export default async function FreeAppPage({
   params,
 }: {
-  params: { appId: string };
+  params: Promise<{ appId: string }>;
 }) {
-  const app = freeApps.find((a) => a.id === params.appId);
+  const { appId } = await params;
+  const app = await getFreeAppBySlug(appId);
 
   if (!app) {
     notFound();
   }
 
-  // Transform the app to match the expected format for the client component
-  const transformedApp: IFreeApp = {
-    ...app,
-  };
-
-  return <FreeAppPageClient app={transformedApp} />;
+  return <FreeAppPageClient app={app} />;
 }

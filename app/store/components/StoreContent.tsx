@@ -3,11 +3,16 @@
 import { useState, createContext } from 'react';
 import StoreFilters, { FilterState } from './StoreFilters';
 import ProductGrid from './ProductGrid';
+import { IPremiumAppListItem } from '@/types/premium-app';
 
 // Create a context to share filter state across components
 export const FilterContext = createContext<FilterState | null>(null);
 
-export default function StoreContent() {
+interface StoreContentProps {
+  premiumApps: IPremiumAppListItem[];
+}
+
+export default function StoreContent({ premiumApps }: StoreContentProps) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
@@ -24,7 +29,7 @@ export default function StoreContent() {
       }}
     >
       <StoreFilters />
-      <ProductGrid />
+      <ProductGrid premiumApps={premiumApps} />
     </FilterContext.Provider>
   );
 }

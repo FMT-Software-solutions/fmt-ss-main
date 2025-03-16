@@ -2,25 +2,28 @@
 
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { IFreeApp } from '@/types/free-app';
+import { getSanityImageUrl } from '@/lib/utils';
 
 interface FreeAppImageProps {
-  app: IFreeApp;
+  mainImage: any;
+  title: string;
+  tags: string[];
 }
 
-export default function FreeAppImage({ app }: FreeAppImageProps) {
+export default function FreeAppImage({
+  mainImage,
+  title,
+  tags,
+}: FreeAppImageProps) {
+  const imageUrl = getSanityImageUrl(mainImage);
+
   return (
     <div>
       <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
-        <Image
-          src={app.mainImage}
-          alt={app.title}
-          fill
-          className="object-cover"
-        />
+        <Image src={imageUrl} alt={title} fill className="object-cover" />
       </div>
       <div className="flex flex-wrap gap-2 mb-6">
-        {app.tags.map((tag) => (
+        {tags.map((tag) => (
           <Badge key={tag} variant="secondary">
             {tag}
           </Badge>

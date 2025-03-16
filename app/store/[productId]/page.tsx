@@ -1,21 +1,14 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { products } from '../products';
 import ProductPageClient from './components/ProductPageClient';
-import { IPremiumApp } from '@/types/premium-app';
-
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    productId: product.id,
-  }));
-}
+import { getPremiumAppBySlug } from '@/lib/sanity';
 
 export async function generateMetadata({
   params,
 }: {
   params: { productId: string };
 }): Promise<Metadata> {
-  const product = products.find((p) => p.id === params.productId);
+  const product = await getPremiumAppBySlug(params.productId);
 
   if (!product) {
     return {
@@ -25,7 +18,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: product.title,
+    title: `${product.title} | FMT Software Solutions`,
     description: product.shortDescription,
   };
 }
@@ -35,16 +28,11 @@ export default async function ProductPage({
 }: {
   params: { productId: string };
 }) {
-  const product = products.find((p) => p.id === params.productId);
+  const product = await getPremiumAppBySlug(params.productId);
 
   if (!product) {
     notFound();
   }
 
-  // Transform the product to match the expected format for the client component
-  const transformedProduct: IPremiumApp = {
-    ...product,
-  };
-
-  return <ProductPageClient product={transformedProduct} />;
+  return <ProductPageClient product={product} />;
 }
