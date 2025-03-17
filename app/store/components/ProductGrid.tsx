@@ -111,7 +111,7 @@ function ProductCard({
             ))}
           </div>
           <div className="flex justify-between items-center mt-auto">
-            <span className="text-2xl font-bold">${product.price}</span>
+            <span className="text-2xl font-bold">GHS{product.price}</span>
             <Button asChild>
               <Link href={`/store/${product.slug.current}`}>View Details</Link>
             </Button>

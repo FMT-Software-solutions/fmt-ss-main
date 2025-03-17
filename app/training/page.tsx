@@ -1,38 +1,25 @@
 import { Metadata } from 'next';
 import TrainingHero from './components/TrainingHero';
-import UpcomingTraining from './components/UpcomingTraining';
-import FreeWorkshops from './components/FreeWorkshops';
-import InstructorHighlight from './components/InstructorHighlight';
-import TrainingFaq from './components/TrainingFaq';
+import TrainingList from './components/TrainingList';
+import { getAllTrainings, getAllTrainingTypes } from '@/lib/sanity';
 
 export const metadata: Metadata = {
-  title: 'Training & Workshops | FMT Software Solutions',
+  title: 'Training Programs | FMT Software Solutions',
   description:
-    'Enhance your skills with our expert-led training sessions and workshops. From beginner to advanced levels, we offer both free and premium training options.',
+    'Enhance your skills with our professional training programs and workshops',
 };
 
-export default function TrainingPage() {
+export default async function TrainingPage() {
+  // Fetch trainings and training types from Sanity
+  const trainings = await getAllTrainings();
+  const trainingTypes = await getAllTrainingTypes();
+
   return (
-    <main className="container mx-auto px-4 py-8">
-      <TrainingHero />
-
-      <div className="my-16">
-        <UpcomingTraining />
+    <div className="min-h-screen py-10">
+      <div className="container">
+        <TrainingHero />
+        <TrainingList trainings={trainings} trainingTypes={trainingTypes} />
       </div>
-
-      <div className="my-16 bg-muted/50 py-16 -mx-4 px-4">
-        <div className="container mx-auto">
-          <FreeWorkshops />
-        </div>
-      </div>
-
-      <InstructorHighlight />
-
-      <div className="my-16 bg-muted/50 py-16 -mx-4 px-4">
-        <div className="container mx-auto">
-          <TrainingFaq />
-        </div>
-      </div>
-    </main>
+    </div>
   );
 }

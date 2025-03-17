@@ -88,7 +88,7 @@ function TrainingCard({
             </div>
           </div>
           <div className="flex justify-between items-center mt-auto">
-            <span className="text-2xl font-bold">${training.price}</span>
+            <span className="text-2xl font-bold">GHS{training.price}</span>
             <Button onClick={() => onRegister(training.id)}>Enroll Now</Button>
           </div>
         </CardContent>

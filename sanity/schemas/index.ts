@@ -4,6 +4,8 @@ import platform from './platform';
 import premiumApp from './premiumApp';
 import freeApp from './freeApp';
 import systemRequirements from './systemRequirements';
+import training from './training';
+import trainingType from './trainingType';
 
 export const schemaTypes = [
   project,
@@ -12,4 +14,6 @@ export const schemaTypes = [
   premiumApp,
   freeApp,
   systemRequirements,
+  training,
+  trainingType,
 ];

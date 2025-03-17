@@ -16,11 +16,11 @@ export default function HeroSection() {
           className="text-center max-w-3xl mx-auto"
         >
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-            Innovative Software Solutions for Community Development
+            Innovative Software Solutions
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
-            Building public projects and premium applications that address 
-            real challenges across all sectors to accelerate growth and progress.
+            Building public projects and premium applications that address real
+            challenges across all sectors to accelerate growth and progress.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button size="lg" asChild>

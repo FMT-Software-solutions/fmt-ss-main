@@ -130,7 +130,7 @@ export default defineType({
       const { title, price, media } = selection;
       return {
         title,
-        subtitle: `$${price}`,
+        subtitle: `GHS${price}`,
         media,
       };
     },

@@ -21,7 +21,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div className="flex items-center gap-4 mb-8">
         {!isFreeApp ? (
           <>
-            <span className="text-3xl font-bold">${product.price}</span>
+            <span className="text-3xl font-bold">GHS{product.price}</span>
             <Button size="lg" className="flex-1">
               <ShoppingCart className="mr-2 h-5 w-5" />
               Buy Now

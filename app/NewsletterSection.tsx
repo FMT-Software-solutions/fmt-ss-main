@@ -3,6 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useActionState } from 'react';
+import { z } from 'zod';
+import { toast } from 'sonner';
+
+// Email validation schema
+const emailSchema = z.string().email('Please enter a valid email address');
 
 // In React 19, we can use the useActionState hook for form handling
 export default function NewsletterSection() {
@@ -10,15 +15,41 @@ export default function NewsletterSection() {
   const [error, submitAction, isPending] = useActionState(
     async (prevState: string | null, formData: FormData) => {
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const email = formData.get('email') as string;
 
-        // Here you would normally send the email to your API
-        const email = formData.get('email');
-        console.log('Subscribed email:', email);
+        // Validate email
+        try {
+          emailSchema.parse(email);
+        } catch (err) {
+          if (err instanceof z.ZodError) {
+            return err.errors[0].message;
+          }
+          return 'Please enter a valid email address';
+        }
+
+        // Send subscription request to API
+        const response = await fetch('/api/newsletter/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          return data.error || 'Failed to subscribe. Please try again.';
+        }
+
+        // Show success toast
+        toast.success(
+          data.message || 'Successfully subscribed to the newsletter!'
+        );
 
         return null; // No error
       } catch (err) {
+        console.error('Subscription error:', err);
         return 'Failed to subscribe. Please try again.';
       }
     },
@@ -49,6 +80,11 @@ export default function NewsletterSection() {
           </form>
 
           {error && <p className="text-destructive mt-2">{error}</p>}
+
+          <p className="text-xs text-muted-foreground mt-4">
+            By subscribing, you agree to our privacy policy. We respect your
+            privacy and will never share your information.
+          </p>
         </div>
       </div>
     </section>

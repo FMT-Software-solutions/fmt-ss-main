@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Workshop } from '../../../workshops';
+import type { Workshop } from '../../training/workshops';
 
 interface PaymentFormProps {
   workshop: Workshop;
@@ -109,7 +109,7 @@ export default function PaymentForm({
           </div>
 
           <Button type="submit" className="w-full">
-            Pay ${workshop.price}
+            Pay GHS{workshop.price}
           </Button>
         </form>
       </CardContent>

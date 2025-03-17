@@ -166,3 +166,93 @@ export const freeAppBySlugQuery = groq`
     publishedAt
   }
 `;
+
+// Query to get all training programs
+export const allTrainingsQuery = groq`
+  *[_type == "training"] | order(startDate asc, publishedAt desc) {
+    _id,
+    title,
+    slug,
+    mainImage,
+    shortDescription,
+    duration,
+    price,
+    isFree,
+    trainingType->{
+      name,
+      slug,
+      icon
+    },
+    startDate,
+    location,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+// Query to get featured training programs
+export const featuredTrainingsQuery = groq`
+  *[_type == "training" && featured == true] | order(startDate asc, publishedAt desc)[0...3] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    shortDescription,
+    duration,
+    price,
+    isFree,
+    trainingType->{
+      name,
+      slug,
+      icon
+    },
+    startDate,
+    location,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+// Query to get a single training program by slug
+export const trainingBySlugQuery = groq`
+  *[_type == "training" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    description,
+    shortDescription,
+    duration,
+    price,
+    isFree,
+    trainingType->{
+      name,
+      slug,
+      icon
+    },
+    startDate,
+    endDate,
+    location,
+    instructor,
+    prerequisites,
+    syllabus,
+    maxParticipants,
+    registeredParticipants,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+// Query to get all training types
+export const allTrainingTypesQuery = groq`
+  *[_type == "trainingType"] | order(name asc) {
+    _id,
+    name,
+    slug,
+    description,
+    icon
+  }
+`;
