@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProjectsGrid from './ProjectsGrid';
 import ProjectsFilters from './ProjectsFilters';
@@ -15,11 +15,8 @@ interface Project {
   [key: string]: any;
 }
 
-export default function ClientProjectsContainer({
-  projects,
-}: {
-  projects: Project[];
-}) {
+// This component accesses useSearchParams and must be wrapped in Suspense
+function FilteredProjects({ projects }: { projects: Project[] }) {
   const searchParams = useSearchParams();
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects);
 
@@ -77,5 +74,20 @@ export default function ClientProjectsContainer({
       <ProjectsFilters />
       <ProjectsGrid projects={filteredProjects} />
     </>
+  );
+}
+
+// Main container component with Suspense
+export default function ClientProjectsContainer({
+  projects,
+}: {
+  projects: Project[];
+}) {
+  return (
+    <Suspense
+      fallback={<div className="py-8 text-center">Loading projects...</div>}
+    >
+      <FilteredProjects projects={projects} />
+    </Suspense>
   );
 }

@@ -2,10 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const rawToken = searchParams.get('token');
 
@@ -76,63 +76,72 @@ export default function UnsubscribePage() {
         'Invalid unsubscribe token format. Please check your email link.'
       );
     }
-  }, [token, isValidUUID]);
+  }, [token, isValidUUID, status]);
 
   return (
-    <div className="container max-w-2xl mx-auto py-20">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-6">Newsletter Unsubscribe</h1>
+    <div className="text-center">
+      <h1 className="text-3xl font-bold mb-6">Newsletter Unsubscribe</h1>
 
-        {status === 'idle' && token && isValidUUID && (
-          <div className="mb-8">
-            <p className="mb-4">Processing your unsubscribe request...</p>
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
+      {status === 'idle' && token && isValidUUID && (
+        <div className="mb-8">
+          <p className="mb-4">Processing your unsubscribe request...</p>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        )}
-
-        {status === 'idle' && (!token || !isValidUUID) && (
-          <div className="mb-8">
-            <p className="text-destructive mb-4">
-              {!token
-                ? 'No unsubscribe token found. Please use the link provided in the newsletter email.'
-                : 'Invalid unsubscribe token format. Please check your email link.'}
-            </p>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="mb-8">
-            <p className="text-green-600 mb-4">{message}</p>
-            <p>
-              You have been removed from our newsletter list and will no longer
-              receive emails from us.
-            </p>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="mb-8">
-            <p className="text-destructive mb-4">{message}</p>
-            {token && isValidUUID && (
-              <Button
-                onClick={handleUnsubscribe}
-                disabled={isLoading}
-                className="mt-4"
-              >
-                {isLoading ? 'Processing...' : 'Try Again'}
-              </Button>
-            )}
-          </div>
-        )}
-
-        <div className="mt-8">
-          <a href="/" className="text-primary hover:underline">
-            Return to Homepage
-          </a>
         </div>
+      )}
+
+      {status === 'idle' && (!token || !isValidUUID) && (
+        <div className="mb-8">
+          <p className="text-destructive mb-4">
+            {!token
+              ? 'No unsubscribe token found. Please use the link provided in the newsletter email.'
+              : 'Invalid unsubscribe token format. Please check your email link.'}
+          </p>
+        </div>
+      )}
+
+      {status === 'success' && (
+        <div className="mb-8">
+          <p className="text-green-600 mb-4">{message}</p>
+          <p>
+            You have been removed from our newsletter list and will no longer
+            receive emails from us.
+          </p>
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div className="mb-8">
+          <p className="text-destructive mb-4">{message}</p>
+          {token && isValidUUID && (
+            <Button
+              onClick={handleUnsubscribe}
+              disabled={isLoading}
+              className="mt-4"
+            >
+              {isLoading ? 'Processing...' : 'Try Again'}
+            </Button>
+          )}
+        </div>
+      )}
+
+      <div className="mt-8">
+        <a href="/" className="text-primary hover:underline">
+          Return to Homepage
+        </a>
       </div>
+    </div>
+  );
+}
+
+// Main page component with Suspense
+export default function UnsubscribePage() {
+  return (
+    <div className="container max-w-2xl mx-auto py-20">
+      <Suspense fallback={<div className="text-center">Loading...</div>}>
+        <UnsubscribeContent />
+      </Suspense>
     </div>
   );
 }

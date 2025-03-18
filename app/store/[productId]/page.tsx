@@ -6,9 +6,10 @@ import { getPremiumAppBySlug } from '@/lib/sanity';
 export async function generateMetadata({
   params,
 }: {
-  params: { productId: string };
+  params: Promise<{ productId: string }>;
 }): Promise<Metadata> {
-  const product = await getPremiumAppBySlug(params.productId);
+  const { productId } = await params;
+  const product = await getPremiumAppBySlug(productId);
 
   if (!product) {
     return {
@@ -26,9 +27,10 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: {
-  params: { productId: string };
+  params: Promise<{ productId: string }>;
 }) {
-  const product = await getPremiumAppBySlug(params.productId);
+  const { productId } = await params;
+  const product = await getPremiumAppBySlug(productId);
 
   if (!product) {
     notFound();

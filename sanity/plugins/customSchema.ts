@@ -1,27 +1,18 @@
 import { definePlugin } from 'sanity';
 import { CustomPortableText } from '../components/CustomPortableText';
 
-interface SchemaField {
-  name: string;
+// Type for document schema type with fields
+interface DocumentSchemaType {
   type: string;
-  of?: Array<{ type: string }>;
-  components?: {
-    input: React.ComponentType<any>;
-  };
-  [key: string]: any;
-}
-
-interface SchemaType {
-  type: string;
-  fields?: SchemaField[];
+  fields?: any[];
   [key: string]: any;
 }
 
 export const customSchemaPlugin = definePlugin({
   name: 'custom-schema-plugin',
   schema: {
-    types: (prev: SchemaType[]) => {
-      return prev.map((schemaType) => {
+    types: (prev: any[]) => {
+      return prev.map((schemaType: any) => {
         // Only modify document types
         if (schemaType.type !== 'document') {
           return schemaType;
@@ -32,26 +23,24 @@ export const customSchemaPlugin = definePlugin({
 
         // If the schema has fields, check for description fields
         if (newSchemaType.fields) {
-          newSchemaType.fields = newSchemaType.fields.map(
-            (field: SchemaField) => {
-              // If this is a description field with block type
-              if (
-                field.name === 'description' &&
-                field.type === 'array' &&
-                field.of &&
-                field.of.some((item) => item.type === 'block')
-              ) {
-                // Return a modified field with our custom component
-                return {
-                  ...field,
-                  components: {
-                    input: CustomPortableText,
-                  },
-                };
-              }
-              return field;
+          newSchemaType.fields = newSchemaType.fields.map((field: any) => {
+            // If this is a description field with block type
+            if (
+              field.name === 'description' &&
+              field.type === 'array' &&
+              field.of &&
+              field.of.some((item: any) => item.type === 'block')
+            ) {
+              // Return a modified field with our custom component
+              return {
+                ...field,
+                components: {
+                  input: CustomPortableText,
+                },
+              };
             }
-          );
+            return field;
+          });
         }
 
         return newSchemaType;
