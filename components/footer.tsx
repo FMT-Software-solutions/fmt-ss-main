@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Code2 } from 'lucide-react';
 
 // Footer links data - defined outside component
 const footerLinks = {
@@ -18,7 +17,7 @@ const footerLinks = {
   ],
 };
 
-export default function Footer() {
+export function Footer() {
   // Current year calculation is done during render
   const currentYear = new Date().getFullYear();
 

@@ -12,7 +12,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
-import { Code2, BookOpen, Download, GraduationCap, Lightbulb } from 'lucide-react';
+import { BookOpen, Download, GraduationCap, Lightbulb } from 'lucide-react';
 import { MobileMenu } from '@/components/MobileMenu';
 import type { NavigationLink } from '@/types/navigation';
 
@@ -24,7 +24,7 @@ const navigationLinks: NavigationLink[] = [
   { href: '/training', icon: GraduationCap, label: 'Training' },
 ];
 
-export default function Navigation() {
+export function Navigation() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
 
