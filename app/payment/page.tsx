@@ -1,4 +1,3 @@
-import { workshops } from '../../workshops';
 import PaymentClient from './components/PaymentClient';
 
 export default async function PaymentPage({
@@ -16,15 +15,13 @@ export default async function PaymentPage({
   const workshopId = resolvedParams.workshopId;
   const data = resolvedSearchParams.data;
 
-  const workshop = workshops.find((w) => w.id === workshopId);
-
-  if (!workshop || !data) {
+  if (!data) {
     return null;
   }
 
   const registrationData = JSON.parse(decodeURIComponent(data));
 
   return (
-    <PaymentClient workshop={workshop} registrationData={registrationData} />
+    <PaymentClient productId={workshopId} registrationData={registrationData} />
   );
 }

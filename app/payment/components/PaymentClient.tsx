@@ -1,17 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import type { Workshop } from '../../../workshops';
 import OrderSummary from './OrderSummary';
 import PaymentForm from './PaymentForm';
 
 interface PaymentClientProps {
-  workshop: Workshop;
+  productId: string;
   registrationData: any;
 }
 
 export default function PaymentClient({
-  workshop,
+  productId,
   registrationData,
 }: PaymentClientProps) {
   return (
@@ -24,9 +23,10 @@ export default function PaymentClient({
         >
           <h1 className="text-3xl font-bold mb-8">Payment Details</h1>
 
-          <OrderSummary workshop={workshop} />
+          <OrderSummary />
           <PaymentForm
-            workshop={workshop}
+            amount={200}
+            productId={productId}
             registrationData={registrationData}
           />
         </motion.div>

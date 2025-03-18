@@ -10,12 +10,14 @@ import { Label } from '@/components/ui/label';
 import type { Workshop } from '../../training/workshops';
 
 interface PaymentFormProps {
-  workshop: Workshop;
+  amount: number;
+  productId: string;
   registrationData: any;
 }
 
 export default function PaymentForm({
-  workshop,
+  amount,
+  productId,
   registrationData,
 }: PaymentFormProps) {
   const router = useRouter();
@@ -41,7 +43,7 @@ export default function PaymentForm({
 
     // Redirect to confirmation page after successful payment
     setTimeout(() => {
-      router.push(`/training/${workshop.id}/confirmation`);
+      router.push(`/training/${productId}/confirmation`);
     }, 2500);
   };
 
@@ -109,7 +111,7 @@ export default function PaymentForm({
           </div>
 
           <Button type="submit" className="w-full">
-            Pay GHS{workshop.price}
+            Pay GHS {amount}
           </Button>
         </form>
       </CardContent>
