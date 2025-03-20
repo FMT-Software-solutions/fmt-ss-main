@@ -13,7 +13,7 @@ export default function AboutStory() {
       >
         <h2 className="text-3xl font-bold mb-4">Our Story</h2>
         <p className="text-muted-foreground mb-4">
-          Founded in 2020, FMT Software Solutions emerged from a vision to
+          Founded in 2023, FMT Software Solutions emerged from a vision to
           bridge the gap between premium software solutions and accessible
           learning resources. We believe that great software should be
           accompanied by great education.
@@ -31,7 +31,7 @@ export default function AboutStory() {
         className="relative aspect-video rounded-lg overflow-hidden"
       >
         <Image
-          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=60"
+          src="https://images.unsplash.com/photo-1621839673705-6617adf9e890?w=800&auto=format&fit=crop&q=60"
           alt="Team collaboration"
           fill
           className="object-cover"

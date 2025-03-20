@@ -8,17 +8,17 @@ const contactInfo = [
   {
     title: 'Email',
     icon: <Mail className="mr-2 h-5 w-5" />,
-    content: 'support@fmtsoftware.com',
+    content: 'fmtsoftwaresolutions@gmail.com',
   },
   {
     title: 'Phone',
     icon: <Phone className="mr-2 h-5 w-5" />,
-    content: '+1 (555) 123-4567',
+    content: '+233 (0) 559 617 959',
   },
   {
     title: 'Live Chat',
     icon: <MessageSquare className="mr-2 h-5 w-5" />,
-    content: 'Available 9 AM - 5 PM EST',
+    content: 'Available 8AM - 6PM GMT',
   },
 ];
 

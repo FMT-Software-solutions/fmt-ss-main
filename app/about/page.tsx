@@ -3,6 +3,7 @@ import AboutHero from './AboutHero';
 import AboutCards from './AboutCards';
 import AboutStory from './AboutStory';
 import AboutAchievements from './AboutAchievements';
+import { featureFlags } from '@/consts/feature-flags';
 
 export const metadata: Metadata = {
   title: 'About FMT Software Solutions',
@@ -18,7 +19,7 @@ export default function About() {
         <AboutHero />
         <AboutCards />
         <AboutStory />
-        <AboutAchievements />
+        {featureFlags.achievements && <AboutAchievements />}
       </div>
     </div>
   );
