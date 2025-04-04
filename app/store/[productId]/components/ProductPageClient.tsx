@@ -7,8 +7,10 @@ import ProductFeatures from './ProductFeatures';
 import ProductRequirements from './ProductRequirements';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Monitor, Smartphone } from 'lucide-react';
+import { Globe, Monitor, ShoppingCart, Smartphone } from 'lucide-react';
 import { IPremiumApp } from '@/types/premium-app';
+import ProductGallery from './ProductGallery';
+import { Button } from '@/components/ui/button';
 
 interface ProductPageClientProps {
   product: IPremiumApp;
@@ -31,9 +33,25 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           transition={{ duration: 0.5 }}
         >
           <div className="grid gap-8 md:grid-cols-2">
-            <ProductImage product={product} />
+            <ProductImage
+              title={product.title}
+              mainImage={product.mainImage}
+              tags={product.tags}
+            />
             <ProductInfo product={product} />
           </div>
+
+          {/* Screenshots Gallery */}
+          {product.screenshots && product.screenshots.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="mt-8"
+            >
+              <ProductGallery screenshots={product.screenshots} />
+            </motion.div>
+          )}
 
           {/* Platforms Section */}
           {product.platforms && product.platforms.length > 0 && (
@@ -87,6 +105,13 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
               </div>
             </motion.div>
           )}
+
+          <div className="flex justify-end py-4">
+            <Button>
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Buy Now
+            </Button>
+          </div>
         </motion.div>
       </div>
     </div>

@@ -22,7 +22,7 @@ export default function FreeAppImage({
       <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
         <Image src={imageUrl} alt={title} fill className="object-cover" />
       </div>
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="hidden md:flex flex-wrap gap-2 mb-6">
         {tags.map((tag) => (
           <Badge key={tag} variant="secondary">
             {tag}

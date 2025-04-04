@@ -5,6 +5,7 @@ import { Download, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { IFreeApp } from '@/types/free-app';
 import { Badge } from '@/components/ui/badge';
+import { PortableText } from '@portabletext/react';
 
 interface FreeAppInfoProps {
   app: IFreeApp;
@@ -56,10 +57,10 @@ export default function FreeAppInfo({ app }: FreeAppInfoProps) {
         )}
       </div>
 
-      {app.longDescription && (
+      {app.description && (
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-4">About</h2>
-          <p className="text-muted-foreground">{app.longDescription}</p>
+          <PortableText value={app.description} />
         </div>
       )}
     </div>
