@@ -15,3 +15,14 @@ export function cn(...inputs: ClassValue[]) {
 export function getSanityImageUrl(image: any) {
   return urlForImage(image)?.url() || '';
 }
+
+export function generatePassword(length = 12): string {
+  const charset =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  return password;
+}

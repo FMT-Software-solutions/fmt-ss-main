@@ -15,7 +15,7 @@ import {
 import { BookOpen, Download, GraduationCap, Lightbulb } from 'lucide-react';
 import { MobileMenu } from '@/components/MobileMenu';
 import type { NavigationLink } from '@/types/navigation';
-import { CartIcon } from '@/app/store/components/CartIcon';
+import { CartIcon } from './CartIcon';
 
 // Navigation links data - extracted to avoid recreating
 const navigationLinks: NavigationLink[] = [

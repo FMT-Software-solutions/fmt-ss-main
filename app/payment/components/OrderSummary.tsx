@@ -17,7 +17,9 @@ export default function OrderSummary() {
           <div className="pt-4 border-t">
             <div className="flex justify-between text-lg font-bold">
               <span>Total</span>
-              <span>GHS200</span>
+              <span>
+                <sup>GHS</sup> 200
+              </span>
             </div>
           </div>
         </div>

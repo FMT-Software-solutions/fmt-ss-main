@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { HookConfig } from 'react-paystack/dist/types';
 import { useEffect, useState } from 'react';
+import { useHostname } from '@/hooks/use-hostname';
 
 interface PaystackPaymentProps {
   email: string;
@@ -21,6 +22,7 @@ interface PaystackPaymentProps {
   onSuccess: (reference: any) => void;
   onClose: () => void;
   isProcessing?: boolean;
+  isValid?: boolean;
 }
 
 const getOrderId = () => {
@@ -34,12 +36,19 @@ export function PaystackButton({
   onSuccess,
   onClose,
   isProcessing = false,
+  isValid = true,
 }: PaystackPaymentProps) {
   const [publicKey, setPublicKey] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
+  const { isMainDomain } = useHostname();
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const isProduction = process.env.NODE_ENV === 'production';
-    const isMainDomain = window.location.hostname === 'fmtsoftware.com';
 
     // Use live key only on production and main domain
     if (isProduction && isMainDomain) {
@@ -48,7 +57,17 @@ export function PaystackButton({
       // Use test key for development or non-main domains
       setPublicKey(process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || '');
     }
-  }, []);
+  }, [isMainDomain]);
+
+  // Don't render anything until we're on the client
+  if (!isClient || typeof window === 'undefined') {
+    return (
+      <Button className="w-full" size="lg" disabled>
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        Loading...
+      </Button>
+    );
+  }
 
   const config: HookConfig = {
     reference: getOrderId(),
@@ -101,7 +120,7 @@ export function PaystackButton({
       onClick={handlePayment}
       className="w-full"
       size="lg"
-      disabled={isProcessing || !publicKey}
+      disabled={!isValid || isProcessing || !publicKey}
     >
       {isProcessing ? (
         <>

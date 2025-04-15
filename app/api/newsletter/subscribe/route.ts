@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           email,
-          subscribed_at: new Date().toISOString(),
-          unsubscribe_token: unsubscribeToken,
+          subscribedAt: new Date().toISOString(),
+          unsubscribeToken: unsubscribeToken,
         },
       ]);
 

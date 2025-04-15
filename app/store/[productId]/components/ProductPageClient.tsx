@@ -11,6 +11,9 @@ import { Globe, Monitor, ShoppingCart, Smartphone } from 'lucide-react';
 import { IPremiumApp } from '@/types/premium-app';
 import ProductGallery from './ProductGallery';
 import { Button } from '@/components/ui/button';
+import { useCartStore } from '../../store/cart';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface ProductPageClientProps {
   product: IPremiumApp;
@@ -24,6 +27,15 @@ const platformIcons: Record<string, React.ReactNode> = {
 };
 
 export default function ProductPageClient({ product }: ProductPageClientProps) {
+  const { addItem } = useCartStore();
+  const router = useRouter();
+
+  const handleAddToCart = () => {
+    addItem(product);
+    toast.success('Added to cart');
+    router.push('/store/cart');
+  };
+
   return (
     <div className="min-h-screen py-10">
       <div className="container max-w-6xl">
@@ -107,9 +119,9 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           )}
 
           <div className="flex justify-end py-4">
-            <Button>
+            <Button onClick={handleAddToCart} size="lg">
               <ShoppingCart className="mr-2 h-5 w-5" />
-              Buy Now
+              Add to Cart
             </Button>
           </div>
         </motion.div>

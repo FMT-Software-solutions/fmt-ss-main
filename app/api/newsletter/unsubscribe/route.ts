@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const { data: subscribers, error } = await supabase
       .from('newsletter_subscribers')
       .select('*')
-      .eq('unsubscribe_token', token);
+      .eq('unsubscribeToken', token);
 
     if (error) {
       return NextResponse.json(
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const { error: deleteError } = await supabase
       .from('newsletter_subscribers')
       .delete()
-      .eq('unsubscribe_token', token);
+      .eq('unsubscribeToken', token);
 
     if (deleteError) {
       return NextResponse.json(
