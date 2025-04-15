@@ -16,7 +16,7 @@ interface PurchaseConfirmationEmailProps {
   organizationDetails: OrganizationDetails;
   items: CartItem[];
   total: number;
-  temporaryPassword: string;
+  temporaryPassword?: string;
 }
 
 export const PurchaseConfirmationEmail = ({
@@ -26,6 +26,7 @@ export const PurchaseConfirmationEmail = ({
   temporaryPassword,
 }: PurchaseConfirmationEmailProps) => {
   const previewText = `Thank you for your purchase at FMT Software Solutions`;
+  const isNewOrganization = !!temporaryPassword;
 
   return (
     <Html>
@@ -37,47 +38,71 @@ export const PurchaseConfirmationEmail = ({
           <Text style={text}>Dear {organizationDetails.organizationName},</Text>
           <Text style={text}>
             Thank you for your purchase at FMT Software Solutions. Below are
-            your order details and login credentials.
+            your order details
+            {isNewOrganization ? ' and login credentials' : ''}.
           </Text>
 
           <Section style={section}>
             <Heading style={h2}>Order Summary</Heading>
             {items.map((item) => (
-              <Text key={item.productId} style={orderItem}>
-                {item.product.title} x {item.quantity} - GHS{' '}
-                {(item.product.price * item.quantity).toFixed(2)}
-              </Text>
+              <div key={item.productId} style={orderItemStyle}>
+                <Text style={orderItem}>
+                  {item.product.title} x {item.quantity} - GHS{' '}
+                  {(item.product.price * item.quantity).toFixed(2)}
+                </Text>
+                {item.product.downloadUrl && (
+                  <Text style={linkText}>
+                    <Link href={item.product.downloadUrl} style={link}>
+                      Download App
+                    </Link>
+                  </Text>
+                )}
+                {item.product.webAppUrl && (
+                  <Text style={linkText}>
+                    <Link href={item.product.webAppUrl} style={link}>
+                      Access Web App
+                    </Link>
+                  </Text>
+                )}
+              </div>
             ))}
             <Hr style={hr} />
-            <Text>Total: GHS {total.toFixed(2)}</Text>
+            <Text style={total as any}>Total: GHS {total.toFixed(2)}</Text>
           </Section>
 
-          <Section style={section}>
-            <Heading style={h2}>Your Login Credentials</Heading>
-            <Text style={text}>
-              Email: {organizationDetails.organizationEmail}
-              <br />
-              Temporary Password: {temporaryPassword}
-            </Text>
-            <Text style={text}>
-              Please change your password after your first login for security
-              purposes.
-            </Text>
-          </Section>
+          {isNewOrganization && (
+            <Section style={section}>
+              <Heading style={h2}>Your Login Credentials</Heading>
+              <Text style={text}>
+                Email: {organizationDetails.organizationEmail}
+                <br />
+                Temporary Password: {temporaryPassword}
+              </Text>
+              <Text style={text}>
+                Please change your password after your first login for security
+                purposes.
+              </Text>
+            </Section>
+          )}
 
           <Section style={section}>
             <Heading style={h2}>Next Steps</Heading>
             <Text style={text}>
-              1. Visit{' '}
-              <Link href="https://fmtsoftware.com/dashboard" style={link}>
-                our dashboard
-              </Link>
-              <br />
-              2. Log in with your credentials
-              <br />
-              3. Change your temporary password
-              <br />
-              4. Access your purchased software
+              {isNewOrganization ? (
+                <>
+                  1. Check the app access links above for each product
+                  <br />
+                  2. Log in with your credentials
+                  <br />
+                  3. Change your temporary password for security
+                </>
+              ) : (
+                <>
+                  1. Check the app access links above for each product
+                  <br />
+                  2. Log in with your existing account credentials
+                </>
+              )}
             </Text>
           </Section>
 
@@ -140,11 +165,23 @@ const section = {
   marginBottom: '32px',
 };
 
+const orderItemStyle = {
+  marginBottom: '16px',
+  padding: '12px',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '4px',
+};
+
 const orderItem = {
   color: '#4a4a4a',
   fontSize: '14px',
   lineHeight: '1.5',
-  margin: '8px 0',
+  margin: '0 0 8px 0',
+};
+
+const linkText = {
+  margin: '4px 0',
+  fontSize: '14px',
 };
 
 const total = {

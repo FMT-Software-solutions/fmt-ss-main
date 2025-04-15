@@ -110,13 +110,28 @@ export default function CheckoutContent() {
 
   const handlePaymentSuccess = async (reference: any) => {
     try {
-      await createPurchaseRecord(
+      setIsProcessing(true);
+
+      const result = await createPurchaseRecord(
         form.getValues(),
         items,
         total,
         reference.reference,
         isExistingOrg
       );
+
+      // Show appropriate success message
+      if (!isExistingOrg) {
+        toast.success(
+          'Purchase successful! We have created an account for you. Please check your email for login details.',
+          { duration: 6000 }
+        );
+      } else {
+        toast.success('Purchase successful! Thank you for your order.', {
+          duration: 4000,
+        });
+      }
+
       clearCart();
       router.push('/store/checkout/success');
     } catch (error) {
@@ -151,10 +166,15 @@ export default function CheckoutContent() {
             ? 'Review your organization details and complete your purchase.'
             : 'Complete your purchase by providing your organization details.'}
         </p>
-        {isExistingOrg && (
+        {isExistingOrg ? (
           <p className="text-sm text-muted-foreground mt-2">
             Organization details can be updated from your dashboard after
             purchase.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground mt-2">
+            We'll create an account for you with these details. Login
+            credentials will be sent to your email.
           </p>
         )}
       </div>

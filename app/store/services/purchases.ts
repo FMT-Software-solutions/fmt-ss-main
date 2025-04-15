@@ -118,6 +118,53 @@ export async function createPurchaseRecord(
     throw new Error(`Error creating purchase record: ${purchaseError.message}`);
   }
 
+  // For new organizations: Create user account and send email with purchase details and login credentials
+  if (!isExistingOrg) {
+    try {
+      // Call our Edge Function using supabase.functions.invoke
+      const { data: functionData, error: functionError } =
+        await supabase.functions.invoke('create-purchase-user', {
+          body: {
+            organizationId: organization_id,
+            organizationDetails,
+            items,
+            total,
+          },
+        });
+
+      if (functionError) {
+        console.error('Error creating user account:', functionError);
+        // We don't throw here to avoid disrupting the purchase flow
+        // The purchase is completed, even if user creation fails
+      }
+    } catch (error) {
+      console.error('Error calling create-purchase-user function:', error);
+      // We don't throw here to avoid disrupting the purchase flow
+    }
+  } else {
+    // For existing organizations: Send a purchase confirmation email without credentials using API route
+    try {
+      const response = await fetch('/api/purchases/confirmation-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          organizationDetails,
+          items,
+          total,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error sending purchase confirmation email:', errorData);
+      }
+    } catch (error) {
+      console.error('Error calling purchase confirmation email API:', error);
+    }
+  }
+
   return {
     organization_id,
     payment_reference,
