@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email using Resend with React components
     const { error: emailError } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'newsletter@fmtsoftware.com',
       to: email,
       subject: 'Welcome to FMT Software Solutions Newsletter',
       react: NewsletterWelcomeEmail({

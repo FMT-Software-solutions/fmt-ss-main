@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     // Send email using Resend
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'contact@fmtsoftware.com',
       to: 'fmtsoftwaresolutions@gmail.com',
       subject: `New Contact Form Submission from ${name}`,
       react: ContactFormEmail({ name, email, message }),
