@@ -1,31 +1,25 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import ProductImage from './ProductImage';
-import ProductInfo from './ProductInfo';
-import ProductFeatures from './ProductFeatures';
-import ProductRequirements from './ProductRequirements';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Globe, Monitor, ShoppingCart, Smartphone } from 'lucide-react';
-import { IPremiumApp } from '@/types/premium-app';
-import ProductGallery from './ProductGallery';
 import { Button } from '@/components/ui/button';
-import { useCartStore } from '../../store/cart';
+import { VideoPlayer } from '@/components/ui/video-player';
+import { IPremiumApp } from '@/types/premium-app';
+import { motion } from 'framer-motion';
+import { CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { VideoPlayer } from '@/components/ui/video-player';
+import { useCartStore } from '../../store/cart';
+import ProductCTA from './ProductCTA';
+import ProductDescription from './ProductDescription';
+import ProductFeatures from './ProductFeatures';
+import ProductGallery from './ProductGallery';
+import ProductHero from './ProductHero';
+import ProductPlatforms from './ProductPlatforms';
+import ProductRequirements from './ProductRequirements';
+import ProductTags from './ProductTags';
 
 interface ProductPageClientProps {
   product: IPremiumApp;
 }
-
-// Platform icons
-const platformIcons: Record<string, React.ReactNode> = {
-  globe: <Globe className="h-4 w-4 mr-1" />,
-  monitor: <Monitor className="h-4 w-4 mr-1" />,
-  smartphone: <Smartphone className="h-4 w-4 mr-1" />,
-};
 
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const { addItem } = useCartStore();
@@ -34,30 +28,60 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
   const handleAddToCart = () => {
     addItem(product);
     toast.success('Added to cart');
+  };
+
+  const handleBuyNow = () => {
+    addItem(product);
     router.push('/store/cart');
   };
 
   return (
-    <div className="min-h-screen py-10">
+    <div className="min-h-screen pb-16">
+      <ProductHero
+        product={product}
+        onBuyNow={handleBuyNow}
+        onAddToCart={handleAddToCart}
+      />
+
       <div className="container max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="grid gap-8 md:grid-cols-2">
-            <ProductImage
-              title={product.title}
-              mainImage={product.mainImage}
-              tags={product.tags}
-            />
-            <ProductInfo product={product} />
-          </div>
+          <ProductDescription product={product} />
 
-          {/* Video Preview */}
+          {/* Video Preview Section */}
           {product.videoUrl && (
-            <VideoPlayer videoUrl={product.videoUrl} title={product.title} />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="mb-12"
+            >
+              <div className="bg-card shadow-md rounded-lg overflow-hidden">
+                <div className="p-4 border-b">
+                  <h2 className="text-2xl font-bold">
+                    Watch {product.title} in Action
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <VideoPlayer
+                    videoUrl={product.videoUrl}
+                    title={product.title}
+                  />
+                </div>
+              </div>
+            </motion.div>
           )}
+
+          <div className="py-10">
+            <ProductCTA
+              product={product}
+              onBuyNow={handleBuyNow}
+              onAddToCart={handleAddToCart}
+            />
+          </div>
 
           {/* Screenshots Gallery */}
           {product.screenshots && product.screenshots.length > 0 && (
@@ -65,71 +89,35 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="mt-8"
+              className="mb-12"
             >
+              <h2 className="text-2xl font-bold mb-4">Gallery</h2>
               <ProductGallery screenshots={product.screenshots} />
             </motion.div>
           )}
 
           {/* Platforms Section */}
           {product.platforms && product.platforms.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="mt-8"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Available Platforms</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    {product.platforms.map((platform) => (
-                      <Badge
-                        key={platform.slug.current}
-                        variant="outline"
-                        className="flex items-center text-base py-2 px-3"
-                      >
-                        {platformIcons[platform.icon] || null}
-                        {platform.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <ProductPlatforms platforms={product.platforms} />
           )}
 
-          <div className="grid gap-8 md:grid-cols-2 mt-8">
+          {/* Features and Requirements */}
+          <div className="grid gap-8 md:grid-cols-2 mb-12">
             <ProductFeatures features={product.features} />
             <ProductRequirements requirements={product.requirements} />
           </div>
 
           {/* Tags Section */}
           {product.tags && product.tags.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-8"
-            >
-              <div className="flex flex-wrap gap-2">
-                {product.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </motion.div>
+            <ProductTags tags={product.tags} />
           )}
 
-          <div className="flex justify-end py-4">
-            <Button onClick={handleAddToCart} size="lg">
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Cart
-            </Button>
-          </div>
+          {/* Final Call to Action */}
+          <ProductCTA
+            product={product}
+            onBuyNow={handleBuyNow}
+            onAddToCart={handleAddToCart}
+          />
         </motion.div>
       </div>
     </div>

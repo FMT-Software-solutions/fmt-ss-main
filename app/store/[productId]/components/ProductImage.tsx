@@ -19,16 +19,16 @@ export default function ProductImage({
   const imageUrl = getSanityImageUrl(mainImage);
 
   return (
-    <div>
-      <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
-        <Image src={imageUrl} alt={title} fill className="object-cover" />
-      </div>
-      <div className="hidden md:flex flex-wrap gap-2 mb-6 ">
-        {tags.map((tag) => (
-          <Badge key={tag} variant="secondary">
-            {tag}
-          </Badge>
-        ))}
+    <div className="relative h-full group">
+      <div className="aspect-video md:aspect-auto md:h-full relative rounded-l-lg overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent z-10"></div>
+        <Image
+          src={imageUrl}
+          alt={title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          priority
+        />
       </div>
     </div>
   );

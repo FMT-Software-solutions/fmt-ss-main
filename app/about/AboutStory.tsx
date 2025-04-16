@@ -14,14 +14,20 @@ export default function AboutStory() {
         <h2 className="text-3xl font-bold mb-4">Our Story</h2>
         <p className="text-muted-foreground mb-4">
           Founded in 2023, FMT Software Solutions emerged from a vision to
-          bridge the gap between premium software solutions and accessible
-          learning resources. We believe that great software should be
-          accompanied by great education.
+          address challenges and issues in Ghana through innovative software
+          solutions. We identified gaps in various sectors where technology
+          could make a significant impact on people's lives.
+        </p>
+        <p className="text-muted-foreground mb-4">
+          Our first public projects focused on essential services like the Place
+          Finder App, which helps users locate services near their current
+          location. We've expanded to develop solutions for housing, public
+          safety, and education.
         </p>
         <p className="text-muted-foreground">
-          Today, we serve thousands of customers worldwide, providing both
-          enterprise-grade software and comprehensive training programs that
-          empower the next generation of tech leaders.
+          Today, we continue to grow by providing both public service apps and
+          premium software solutions tailored to businesses and individuals,
+          along with comprehensive training programs for aspiring developers.
         </p>
       </motion.div>
       <motion.div

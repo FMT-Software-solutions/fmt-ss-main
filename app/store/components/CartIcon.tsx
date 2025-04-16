@@ -9,10 +9,7 @@ import { CartItem } from '../types/cart';
 
 export function CartIcon() {
   const { items } = useCartStore();
-  const itemCount = items.reduce(
-    (acc: number, item: CartItem) => acc + item.quantity,
-    0
-  );
+  const itemCount = items.length;
 
   if (itemCount === 0) {
     return null;
