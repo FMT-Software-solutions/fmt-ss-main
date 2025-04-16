@@ -34,7 +34,11 @@ export function OrganizationDetailsForm({
           <FormItem>
             <FormLabel>{label}</FormLabel>
             <FormControl>
-              <Input {...field} disabled={isExistingOrg} />
+              <Input
+                {...field}
+                value={typeof field.value === 'object' ? '' : field.value}
+                disabled={isExistingOrg}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

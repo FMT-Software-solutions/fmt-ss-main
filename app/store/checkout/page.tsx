@@ -1,17 +1,5 @@
-import { Metadata } from 'next';
-import CheckoutContent from './components/CheckoutContent';
+import ClientCheckoutPage from './components/ClientCheckoutPage';
 
-export const metadata: Metadata = {
-  title: 'Checkout | FMT Software Solutions',
-  description: 'Complete your purchase of premium software solutions',
-};
-
-export default function CheckoutPage() {
-  return (
-    <div className="min-h-screen py-10">
-      <div className="container max-w-5xl">
-        <CheckoutContent />
-      </div>
-    </div>
-  );
+export default function Page() {
+  return <ClientCheckoutPage />;
 }
