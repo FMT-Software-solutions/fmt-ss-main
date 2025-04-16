@@ -39,6 +39,7 @@ export const projectBySlugQuery = groq`
     slug,
     mainImage,
     screenshots,
+    videoUrl,
     description,
     shortDescription,
     "sectors": sectors[]->name,
@@ -109,6 +110,7 @@ export const premiumAppBySlugQuery = groq`
     slug,
     mainImage,
     screenshots,
+    videoUrl,
     description,
     shortDescription,
     "sectors": sectors[]->name,
@@ -150,6 +152,7 @@ export const freeAppBySlugQuery = groq`
     slug,
     mainImage,
     screenshots,
+    videoUrl,
     description,
     shortDescription,
     "sectors": sectors[]->name,
@@ -222,6 +225,7 @@ export const trainingBySlugQuery = groq`
     title,
     slug,
     mainImage,
+    videoUrl,
     description,
     shortDescription,
     duration,
@@ -235,6 +239,7 @@ export const trainingBySlugQuery = groq`
     startDate,
     endDate,
     location,
+    joiningLink,
     instructor,
     prerequisites,
     syllabus,
@@ -254,5 +259,57 @@ export const allTrainingTypesQuery = groq`
     slug,
     description,
     icon
+  }
+`;
+
+// Event queries
+export const allEventsQuery = groq`
+  *[_type == "event" && defined(slug.current)] | order(startDate desc) {
+    _id,
+    title,
+    slug,
+    mainImage,
+    shortDescription,
+    startDate,
+    location,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+export const featuredEventsQuery = groq`
+  *[_type == "event" && featured == true && defined(slug.current)] | order(startDate desc)[0...4] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    shortDescription,
+    startDate,
+    location,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+export const eventBySlugQuery = groq`
+  *[_type == "event" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    videoUrl,
+    description,
+    shortDescription,
+    startDate,
+    endDate,
+    location,
+    joiningLink,
+    organizer,
+    registrationLink,
+    tags,
+    featured,
+    publishedAt
   }
 `;

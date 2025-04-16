@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { PortableText } from '@portabletext/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { VideoPlayer } from '@/components/ui/video-player';
+import { IPublicProject } from '@/types/public-project';
 
 const components = {
   block: {
@@ -50,8 +52,12 @@ const components = {
   },
 };
 
-export default function ProjectContent({ project }: { project: any }) {
-  const { description, shortDescription } = project;
+export default function ProjectContent({
+  project,
+}: {
+  project: IPublicProject;
+}) {
+  const { description, shortDescription, videoUrl } = project;
 
   return (
     <motion.div
@@ -77,6 +83,13 @@ export default function ProjectContent({ project }: { project: any }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Video Section */}
+      {videoUrl && (
+        <div className="mt-6">
+          <VideoPlayer videoUrl={videoUrl} title={project.title} />
+        </div>
+      )}
     </motion.div>
   );
 }

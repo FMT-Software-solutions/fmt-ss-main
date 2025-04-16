@@ -24,6 +24,8 @@ import { formatCustom, getRelativeTimeString } from '@/lib/date';
 import { getSanityImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { toast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/browser';
+import { PaystackButton } from '@/components/PaystackButton';
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -53,8 +55,21 @@ interface RegistrationFormProps {
 
 export default function RegistrationForm({ training }: RegistrationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [registrationData, setRegistrationData] = useState<any>(null);
+  const [paymentStep, setPaymentStep] = useState(false);
+  const [registrationError, setRegistrationError] = useState<string | null>(
+    null
+  );
   const router = useRouter();
   const imageUrl = getSanityImageUrl(training.mainImage);
+  const supabase = createClient();
+
+  // Calculate available spots
+  const maxParticipants = training.maxParticipants || 0;
+  const registeredParticipants = training.registeredParticipants || 0;
+  const availableSpots = Math.max(0, maxParticipants - registeredParticipants);
+  const isFull = maxParticipants > 0 && availableSpots === 0;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -70,26 +85,57 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
   });
 
   async function onSubmit(values: FormValues) {
+    if (paymentStep || isFull) return; // Prevent submissions when full or already in payment step
+
     setIsSubmitting(true);
+    setRegistrationError(null);
 
     try {
-      // In a real application, you would send this data to your backend
-      // For now, we'll simulate a successful submission
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      toast({
-        title: 'Registration successful!',
-        description:
-          'You have successfully registered for this training program.',
+      // Submit registration to API
+      const response = await fetch('/api/training/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...values,
+          training,
+        }),
       });
 
-      // Redirect to a thank you page or back to the training page
-      router.push(`/training/${training.slug.current}/thank-you`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // For free trainings, redirect to thank you page
+      if (!data.requiresPayment) {
+        toast({
+          title: 'Registration successful!',
+          description:
+            'You have successfully registered for this training program.',
+        });
+        router.push(`/training/${training.slug.current}/thank-you`);
+        return;
+      }
+
+      // For paid trainings, show payment form
+      setRegistrationData(data.registrationData);
+      setPaymentStep(true);
+      toast({
+        title: 'Please complete payment',
+        description:
+          'Complete the payment to secure your spot in the training.',
+      });
     } catch (error) {
+      console.error('Registration error:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      setRegistrationError(errorMessage);
       toast({
         title: 'Registration failed',
-        description:
-          'There was an error processing your registration. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -97,51 +143,178 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
     }
   }
 
+  const handlePaymentSuccess = async (reference: any) => {
+    try {
+      setIsProcessingPayment(true);
+
+      // Submit payment to API
+      const response = await fetch('/api/training/payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          registrationId: registrationData.id,
+          paymentReference: reference.reference,
+          amount: training.price,
+          trainingData: training,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment processing failed');
+      }
+
+      toast({
+        title: 'Registration complete!',
+        description:
+          'Your payment has been processed and your registration is confirmed.',
+      });
+
+      // Redirect to thank you page
+      router.push(`/training/${training.slug.current}/thank-you`);
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Payment failed',
+        description:
+          'There was an error processing your payment. Please try again or contact support.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handlePaymentClose = () => {
+    toast({
+      title: 'Payment cancelled',
+      description:
+        'You can complete the payment later to secure your spot in the training.',
+    });
+  };
+
   return (
     <div className="grid md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+        {isFull ? (
+          <div className="p-6 border rounded-lg bg-muted">
+            <h2 className="text-xl font-bold mb-3">Registration Closed</h2>
+            <p className="mb-4">
+              This training has reached its maximum capacity of{' '}
+              {maxParticipants} participants.
+            </p>
+            <p className="mb-6 text-muted-foreground">
+              Please check back later for future sessions or contact us if you
+              would like to be notified when new spots become available.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/training/${training.slug.current}`)}
+              className="mr-4"
+            >
+              Return to Training
+            </Button>
+            <Button onClick={() => router.push('/training')}>
+              Browse Other Trainings
+            </Button>
+          </div>
+        ) : !paymentStep ? (
+          <Form {...form}>
+            {registrationError && (
+              <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
+                {registrationError}
+              </div>
+            )}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+233 XX XXX XXXX" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="email"
+                name="company"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Company (Optional)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="john.doe@example.com"
+                      <Input placeholder="Your company name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Information (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any specific requirements or questions?"
+                        className="resize-none"
                         {...field}
                       />
                     </FormControl>
@@ -149,89 +322,75 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name="phone"
+                name="agreeToTerms"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Terms and Conditions</FormLabel>
+                      <FormDescription>
+                        I agree to the terms of service and privacy policy.
+                      </FormDescription>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your company name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'Register Now'}
+              </Button>
+            </form>
+          </Form>
+        ) : (
+          <Card>
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-bold mb-4">Complete Your Payment</h2>
+              <p className="mb-6 text-muted-foreground">
+                To secure your spot in the training program, please complete the
+                payment below.
+              </p>
 
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Information (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Any specific requirements or questions?"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="agreeToTerms"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Terms and Conditions</FormLabel>
-                    <FormDescription>
-                      I agree to the terms of service and privacy policy.
-                    </FormDescription>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? 'Processing...'
-                : training.isFree
-                  ? 'Register Now'
-                  : 'Complete Registration'}
-            </Button>
-          </form>
-        </Form>
+              <PaystackButton
+                email={form.getValues('email')}
+                amount={training.price}
+                metadata={{
+                  name: `${form.getValues('firstName')} ${form.getValues('lastName')}`,
+                  phone: form.getValues('phone'),
+                  custom_fields: [
+                    {
+                      display_name: 'Training',
+                      variable_name: 'training',
+                      value: training.title,
+                    },
+                    {
+                      display_name: 'Registration ID',
+                      variable_name: 'registration_id',
+                      value: registrationData?.id || '',
+                    },
+                  ],
+                }}
+                onSuccess={handlePaymentSuccess}
+                onClose={handlePaymentClose}
+                isProcessing={isProcessingPayment}
+                isValid={!!registrationData}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div>
@@ -276,16 +435,32 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
                 <span>GHS{training.price}</span>
               )}
             </div>
-            {training.maxParticipants && (
-              <p className="text-sm text-muted-foreground">
-                {Math.max(
-                  0,
-                  training.maxParticipants -
-                    (training.registeredParticipants || 0)
-                )}{' '}
-                spots remaining
-              </p>
-            )}
+            {training?.maxParticipants ? (
+              <div className="mt-4">
+                <div className="w-full bg-muted rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full ${
+                      isFull ? 'bg-destructive' : 'bg-primary'
+                    }`}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (registeredParticipants / maxParticipants) * 100
+                      )}%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {isFull ? (
+                    <span className="text-destructive font-medium">
+                      Registration closed
+                    </span>
+                  ) : (
+                    `${availableSpots} ${availableSpots === 1 ? 'spot' : 'spots'} remaining`
+                  )}
+                </p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </div>

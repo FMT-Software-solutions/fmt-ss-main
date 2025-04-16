@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTrainingBySlug } from '@/lib/sanity';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CalendarIcon, ArrowLeftIcon, UserCheckIcon } from 'lucide-react';
 
 export async function generateMetadata({
   params,
@@ -15,13 +15,13 @@ export async function generateMetadata({
 
   if (!training) {
     return {
-      title: 'Training Not Found',
-      description: 'The requested training program could not be found.',
+      title: 'Registration Complete',
+      description: 'Thank you for registering for our training program.',
     };
   }
 
   return {
-    title: `Registration Confirmed | ${training.title} | FMT Software Solutions`,
+    title: `Registration Complete - ${training.title} | FMT Software Solutions`,
     description: `Thank you for registering for our ${training.title} training program.`,
   };
 }
@@ -39,37 +39,54 @@ export default async function ThankYouPage({
   }
 
   return (
-    <div className="container max-w-4xl py-16">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-6">
-          <CheckCircle className="h-8 w-8 text-green-600" />
-        </div>
-
-        <h1 className="text-3xl font-bold mb-4">Registration Confirmed!</h1>
-
-        <p className="text-xl mb-8">
-          Thank you for registering for{' '}
-          <span className="font-semibold">{training.title}</span>
+    <div className="container max-w-4xl py-12">
+      <div className="max-w-lg mx-auto text-center">
+        <UserCheckIcon className="h-16 w-16 text-primary mx-auto mb-4" />
+        <h1 className="text-3xl font-bold mb-4">Registration Complete!</h1>
+        <p className="text-xl mb-2">
+          Thank you for registering for "{training.title}"
         </p>
-
-        <div className="max-w-md mx-auto mb-10 text-muted-foreground">
-          <p className="mb-4">
-            We've sent a confirmation email with all the details to your email
-            address.
-          </p>
-          <p>
-            If you have any questions or need to make changes to your
-            registration, please contact our support team.
-          </p>
+        <div className="bg-muted p-6 rounded-lg my-8 text-left">
+          <h2 className="font-semibold text-lg mb-2">What happens next?</h2>
+          <ul className="space-y-2">
+            <li className="flex items-start">
+              <CalendarIcon className="h-5 w-5 mr-2 mt-0.5 text-primary" />
+              <span>
+                You will receive a confirmation email with all the training
+                details
+              </span>
+            </li>
+            <li className="flex items-start">
+              <CalendarIcon className="h-5 w-5 mr-2 mt-0.5 text-primary" />
+              <span>
+                We will send you a reminder a few days before the training date
+              </span>
+            </li>
+            {training.location?.toLowerCase() === 'online' && (
+              <li className="flex items-start">
+                <CalendarIcon className="h-5 w-5 mr-2 mt-0.5 text-primary" />
+                <span>
+                  You will receive the online access link before the training
+                  starts
+                </span>
+              </li>
+            )}
+          </ul>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg">
-            <Link href="/training">Browse More Trainings</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/">Return to Home</Link>
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <Link href={`/training/${training.slug.current}`}>
+            <Button variant="outline" className="flex items-center">
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Back to Training
+            </Button>
+          </Link>
+          <Link href="/training">
+            <Button variant="outline">View All Trainings</Button>
+          </Link>
+          <Link href="/">
+            <Button>Return Home</Button>
+          </Link>
         </div>
       </div>
     </div>

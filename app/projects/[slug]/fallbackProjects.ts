@@ -1,76 +1,114 @@
 import { IPublicProject } from '@/types/public-project';
 
-export const fallbackProjects: { [key: string]: IPublicProject } = {
+export const fallbackProjects: Record<string, IPublicProject> = {
   'place-finder': {
     _id: 'place-finder',
-    title: 'Place Finder',
+    title: 'Place Finder App',
     slug: { current: 'place-finder' },
-    shortDescription:
-      'Locate nearby services like restaurants, banks, and shops based on your current location',
+    mainImage: { url: '/placeholders/place-finder.jpg' },
+    screenshots: [
+      { url: '/placeholders/place-finder-1.jpg' },
+      { url: '/placeholders/place-finder-2.jpg' },
+    ],
+    videoUrl: undefined,
     description: [
       {
         _type: 'block',
         style: 'normal',
         children: [
           {
+            text: 'The Place Finder App is designed to help users locate services and places near their current location in Ghana. It provides a simple, intuitive interface for finding essential services like banks, hospitals, restaurants, and more.',
             _type: 'span',
-            text: "Place Finder is an innovative app designed to help users locate essential services near their current location. Whether you need to find a restaurant, bank, gas station, or any other service, Place Finder makes it easy to discover what's around you.",
+            marks: [],
           },
         ],
+        markDefs: [],
       },
     ],
-    status: 'upcoming',
-    sectors: ['Location'],
-    mainImage: null,
-    screenshots: [],
+    shortDescription:
+      'An app to help you locate places and services near your current location in Ghana.',
+    sectors: ['Public Services', 'Navigation'],
+    status: 'ongoing',
+    tags: ['Mobile App', 'Location Services', 'Navigation', 'Public Service'],
     features: [
-      'Find nearby services based on your location',
-      'Filter results by category',
-      'Get directions to your destination',
-      'Save favorite places',
-      'Read reviews from other users',
+      'Real-time location tracking',
+      'Search for nearby services',
+      'Filter by service type',
+      'Get directions to selected places',
+      'Save favorite locations',
+      'User ratings and reviews',
     ],
     platforms: [
-      { name: 'Web', slug: { current: 'web' }, icon: 'globe' },
-      { name: 'Mobile', slug: { current: 'mobile' }, icon: 'smartphone' },
+      {
+        name: 'iOS',
+        slug: { current: 'ios' },
+        icon: 'smartphone',
+      },
+      {
+        name: 'Android',
+        slug: { current: 'android' },
+        icon: 'smartphone',
+      },
+      {
+        name: 'Web',
+        slug: { current: 'web' },
+        icon: 'globe',
+      },
     ],
-    tags: ['Location', 'Services', 'Maps'],
     projectUrl: null,
-    publishedAt: new Date().toISOString(),
+    publishedAt: '2023-06-15',
   },
-  rentease: {
-    _id: 'rentease',
-    title: 'RentEase',
-    slug: { current: 'rentease' },
-    shortDescription:
-      'Connect directly with landlords through verified listings without intermediaries',
+  'rent-ease-gh': {
+    _id: 'rent-ease-gh',
+    title: 'RentEase GH',
+    slug: { current: 'rent-ease-gh' },
+    mainImage: { url: '/placeholders/rent-ease.jpg' },
+    screenshots: [
+      { url: '/placeholders/rent-ease-1.jpg' },
+      { url: '/placeholders/rent-ease-2.jpg' },
+    ],
+    videoUrl: undefined,
     description: [
       {
         _type: 'block',
         style: 'normal',
         children: [
           {
+            text: 'RentEase GH connects landlords directly with potential tenants, offering verified listings and eliminating intermediaries. Finding rental accommodation can be challenging due to unreliable listings and high agent fees. This app streamlines the process and reduces costs for all parties.',
             _type: 'span',
-            text: 'RentEase is a platform that connects landlords directly with potential tenants, eliminating the need for intermediaries. The app offers verified listings and streamlines the rental process, making it easier and more affordable for everyone involved.',
+            marks: [],
           },
         ],
+        markDefs: [],
       },
     ],
-    status: 'ongoing',
-    sectors: ['Housing'],
-    mainImage: null,
-    screenshots: [],
+    shortDescription:
+      'A platform connecting landlords directly with tenants, eliminating intermediaries and reducing costs.',
+    sectors: ['Real Estate', 'Housing'],
+    status: 'upcoming',
+    tags: ['Web App', 'Mobile App', 'Housing', 'Real Estate'],
     features: [
-      'Direct landlord-tenant communication',
       'Verified property listings',
-      'In-app document signing',
-      'Rental payment processing',
-      'Maintenance request tracking',
+      'Direct landlord-tenant communication',
+      'Virtual property tours',
+      'Secure payment processing',
+      'Rental agreement templates',
+      'Tenant verification services',
     ],
-    platforms: [{ name: 'Web', slug: { current: 'web' }, icon: 'globe' }],
-    tags: ['Housing', 'Rental', 'Property'],
-    projectUrl: 'https://example.com/rentease',
-    publishedAt: new Date().toISOString(),
+    platforms: [
+      {
+        name: 'Web',
+        slug: { current: 'web' },
+        icon: 'globe',
+      },
+      {
+        name: 'Android',
+        slug: { current: 'android' },
+        icon: 'smartphone',
+      },
+    ],
+    projectUrl: null,
+    publishedAt: '2023-08-20',
   },
   safenet: {
     _id: 'safenet',

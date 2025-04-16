@@ -6,6 +6,7 @@ import freeApp from './freeApp';
 import systemRequirements from './systemRequirements';
 import training from './training';
 import trainingType from './trainingType';
+import event from './event';
 
 export const schemaTypes = [
   project,
@@ -16,4 +17,5 @@ export const schemaTypes = [
   systemRequirements,
   training,
   trainingType,
+  event,
 ];

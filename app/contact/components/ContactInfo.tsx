@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supportContact } from '@/consts';
 import { Mail, MessageSquare, Phone } from 'lucide-react';
 
 // Contact info data moved outside component to avoid recreation on each render
@@ -13,7 +14,7 @@ const contactInfo = [
   {
     title: 'Phone',
     icon: <Phone className="mr-2 h-5 w-5" />,
-    content: '+233 (0) 559 617 959',
+    content: supportContact,
   },
   {
     title: 'Live Chat',

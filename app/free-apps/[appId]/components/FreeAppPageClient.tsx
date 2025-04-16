@@ -10,6 +10,7 @@ import FreeAppRequirements from './FreeAppRequirements';
 import FreeAppPlatforms from './FreeAppPlatforms';
 import FreeAppGallery from './FreeAppGallery';
 import { Badge } from '@/components/ui/badge';
+import { VideoPlayer } from '@/components/ui/video-player';
 
 interface FreeAppPageClientProps {
   app: IFreeApp;
@@ -32,6 +33,11 @@ export default function FreeAppPageClient({ app }: FreeAppPageClientProps) {
             />
             <FreeAppInfo app={app} />
           </div>
+
+          {/* Video Preview */}
+          {app.videoUrl && (
+            <VideoPlayer videoUrl={app.videoUrl} title={app.title} />
+          )}
 
           {/* Screenshots Gallery */}
           {app.screenshots && app.screenshots.length > 0 && (

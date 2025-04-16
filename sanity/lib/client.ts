@@ -7,6 +7,7 @@ export const client = createClient({
   apiVersion: projectDetails.apiVersion,
   useCdn: process.env.NODE_ENV === 'production',
   perspective: 'published',
+  token: process.env.SANITY_API_TOKEN,
 });
 
 export const previewClient = createClient({
@@ -16,4 +17,4 @@ export const previewClient = createClient({
   useCdn: false,
   perspective: 'previewDrafts',
   token: process.env.SANITY_API_TOKEN,
-}); 
+});

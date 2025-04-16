@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useCartStore } from '../../store/cart';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { VideoPlayer } from '@/components/ui/video-player';
 
 interface ProductPageClientProps {
   product: IPremiumApp;
@@ -52,6 +53,11 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
             />
             <ProductInfo product={product} />
           </div>
+
+          {/* Video Preview */}
+          {product.videoUrl && (
+            <VideoPlayer videoUrl={product.videoUrl} title={product.title} />
+          )}
 
           {/* Screenshots Gallery */}
           {product.screenshots && product.screenshots.length > 0 && (

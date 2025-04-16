@@ -4,6 +4,7 @@ export interface IPublicProject {
   slug: { type?: string; current: string };
   mainImage: any;
   screenshots: any;
+  videoUrl?: string;
   description: any[];
   shortDescription: string;
   sectors: string[];

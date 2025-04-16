@@ -5,6 +5,7 @@ export interface IFreeApp {
   slug: { type?: string; current: string };
   mainImage: any;
   screenshots: any[];
+  videoUrl?: string; // YouTube video URL
   description: any[]; // For rich text content from Sanity
   shortDescription: string;
   longDescription?: string; // Used in local data

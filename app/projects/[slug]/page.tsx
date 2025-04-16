@@ -18,6 +18,7 @@ const projectBySlugQueryFallback = groq`
     slug,
     mainImage,
     screenshots,
+    videoUrl,
     description,
     shortDescription,
     "sectors": sectors[]->name,

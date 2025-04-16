@@ -1,9 +1,12 @@
 import { client } from '@/sanity/lib/client';
 import {
+  allEventsQuery,
   allFreeAppsQuery,
   allPremiumAppsQuery,
   allTrainingsQuery,
   allTrainingTypesQuery,
+  eventBySlugQuery,
+  featuredEventsQuery,
   featuredTrainingsQuery,
   freeAppBySlugQuery,
   premiumAppBySlugQuery,
@@ -12,6 +15,7 @@ import {
 import { IFreeApp, IFreeAppListItem } from '@/types/free-app';
 import { IPremiumApp, IPremiumAppListItem } from '@/types/premium-app';
 import { ITraining, ITrainingListItem } from '@/types/training';
+import { IEvent, IEventListItem } from '@/types/event';
 
 // Function to fetch all free apps
 export async function getAllFreeApps(): Promise<IFreeAppListItem[]> {
@@ -130,5 +134,39 @@ export async function getAllTrainingTypes() {
   } catch (error) {
     console.error('Error fetching training types:', error);
     return [];
+  }
+}
+
+// Events
+export async function getEvents(): Promise<IEventListItem[]> {
+  try {
+    const events = await client.fetch(allEventsQuery);
+    return events || [];
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedEvents(): Promise<IEventListItem[]> {
+  try {
+    const events = await client.fetch(featuredEventsQuery);
+    return events || [];
+  } catch (error) {
+    console.error('Error fetching featured events:', error);
+    return [];
+  }
+}
+
+export async function getEventBySlug(slug: string): Promise<IEvent | null> {
+  try {
+    const event = await client.fetch(eventBySlugQuery, { slug });
+
+    if (!event) return null;
+
+    return event;
+  } catch (error) {
+    console.error(`Error fetching event with slug ${slug}:`, error);
+    return null;
   }
 }

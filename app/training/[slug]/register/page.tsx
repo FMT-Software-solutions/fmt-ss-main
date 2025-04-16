@@ -1,7 +1,23 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getTrainingBySlug } from '@/lib/sanity';
 import RegistrationForm from './components/RegistrationForm';
+import { unstable_cache } from 'next/cache';
+
+// Cache configuration - revalidates every 60 seconds
+export const revalidate = 60;
+
+// Add a dynamic segment config to opt out of static generation
+export const dynamic = 'force-dynamic';
+
+// Use unstable_cache with a short TTL to ensure fresh data
+const getTrainingWithCache = unstable_cache(
+  async (slug: string) => {
+    return getTrainingBySlug(slug);
+  },
+  ['training-registration'],
+  { revalidate: 60 } // Revalidate cache every 60 seconds
+);
 
 export async function generateMetadata({
   params,
@@ -9,7 +25,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const training = await getTrainingBySlug(slug);
+  const training = await getTrainingWithCache(slug);
 
   if (!training) {
     return {
@@ -32,10 +48,22 @@ export default async function RegistrationPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const training = await getTrainingBySlug(slug);
+  const training = await getTrainingWithCache(slug);
 
   if (!training) {
     notFound();
+  }
+
+  // Check if registration is full
+  const hasMaxParticipants = !!training.maxParticipants;
+  const registeredParticipants = training.registeredParticipants || 0;
+  const maxParticipants = training.maxParticipants || 0;
+  const isFull =
+    hasMaxParticipants && registeredParticipants >= maxParticipants;
+
+  // Redirect to the training page if registration is full
+  if (isFull) {
+    redirect(`/training/${training.slug.current}?registration=full`);
   }
 
   return (

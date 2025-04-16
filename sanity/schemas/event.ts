@@ -1,8 +1,8 @@
 import { defineField, defineType } from 'sanity';
 
 export default defineType({
-  name: 'freeApp',
-  title: 'Free App',
+  name: 'event',
+  title: 'Event',
   type: 'document',
   fields: [
     defineField({
@@ -25,16 +25,8 @@ export default defineType({
       name: 'featured',
       title: 'Featured',
       type: 'boolean',
-      description: 'Show this app on the homepage',
+      description: 'Show this event on the homepage',
       initialValue: false,
-    }),
-    defineField({
-      name: 'sectors',
-      title: 'Sectors',
-      type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'sector' }] }],
-      validation: (Rule) => Rule.required().min(1),
-      description: 'Select one or more sectors for this app',
     }),
     defineField({
       name: 'mainImage',
@@ -49,13 +41,7 @@ export default defineType({
       name: 'videoUrl',
       title: 'Video URL',
       type: 'url',
-      description: 'YouTube video URL for the app (optional)',
-    }),
-    defineField({
-      name: 'screenshots',
-      title: 'Screenshots',
-      type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }],
+      description: 'YouTube video URL for the event (optional)',
     }),
     defineField({
       name: 'description',
@@ -75,35 +61,42 @@ export default defineType({
       validation: (Rule) => Rule.required().max(200),
     }),
     defineField({
-      name: 'features',
-      title: 'Features',
-      type: 'array',
-      of: [{ type: 'string' }],
+      name: 'startDate',
+      title: 'Start Date',
+      type: 'datetime',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'systemRequirements',
-      title: 'System Requirements',
-      type: 'systemRequirements',
+      name: 'endDate',
+      title: 'End Date',
+      type: 'datetime',
     }),
     defineField({
-      name: 'platforms',
-      title: 'Available Platforms',
-      type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'platform' }] }],
+      name: 'location',
+      title: 'Location',
+      type: 'string',
+      description: 'Physical location or "Online" for virtual events',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'downloadUrl',
-      title: 'Download URL',
+      name: 'joiningLink',
+      title: 'Joining Link',
       type: 'url',
-      description: 'URL for downloading the app (if applicable)',
+      description:
+        'For online events: link to join the session. For in-person: directions link (e.g., Google Maps)',
     }),
     defineField({
-      name: 'webAppUrl',
-      title: 'Web App URL',
+      name: 'organizer',
+      title: 'Organizer',
+      type: 'string',
+      initialValue: 'FMT Software Solutions',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'registrationLink',
+      title: 'Registration Link',
       type: 'url',
-      description: 'URL for the web version of the app (if applicable)',
+      description: 'URL for event registration (if applicable)',
     }),
     defineField({
       name: 'tags',
@@ -123,14 +116,17 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      sector: 'sector.name',
       media: 'mainImage',
+      date: 'startDate',
     },
     prepare(selection) {
-      const { title, sector, media } = selection;
+      const { title, media, date } = selection;
+      const formattedDate = date
+        ? new Date(date).toLocaleDateString()
+        : 'No date';
       return {
         title,
-        subtitle: sector ? `Sector: ${sector}` : 'Free App',
+        subtitle: `Event on ${formattedDate}`,
         media,
       };
     },

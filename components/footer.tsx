@@ -9,7 +9,7 @@ const footerLinks = {
   ],
   training: [
     { href: '/training', label: 'Training Programs' },
-    { href: '/training/archive', label: 'Events' },
+    { href: '/events', label: 'Events' },
   ],
   company: [
     { href: '/about', label: 'About Us' },

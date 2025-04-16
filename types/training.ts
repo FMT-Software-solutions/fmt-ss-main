@@ -4,6 +4,7 @@ export interface ITraining {
   title: string;
   slug: { type?: string; current: string };
   mainImage: any;
+  videoUrl?: string; // YouTube video URL
   description: any[]; // For rich text content from Sanity
   shortDescription: string;
   longDescription?: string; // Used in local data
@@ -17,6 +18,7 @@ export interface ITraining {
   startDate?: string;
   endDate?: string;
   location?: string;
+  joiningLink?: string; // For online: joining link, for in-person: directions
   instructor: {
     name: string;
     bio: string;

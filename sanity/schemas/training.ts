@@ -38,6 +38,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'videoUrl',
+      title: 'Video URL',
+      type: 'url',
+      description: 'YouTube video URL for the training (optional)',
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'array',
@@ -95,6 +101,13 @@ export default defineType({
       title: 'Location',
       type: 'string',
       description: 'For in-person trainings, or "Online" for virtual trainings',
+    }),
+    defineField({
+      name: 'joiningLink',
+      title: 'Joining Link',
+      type: 'url',
+      description:
+        'For online trainings: link to join the session. For in-person: directions link (e.g., Google Maps)',
     }),
     defineField({
       name: 'instructor',

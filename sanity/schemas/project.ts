@@ -59,6 +59,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'videoUrl',
+      title: 'Video URL',
+      type: 'url',
+      description: 'YouTube video URL for the project (optional)',
+    }),
+    defineField({
       name: 'screenshots',
       title: 'Screenshots',
       type: 'array',

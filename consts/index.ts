@@ -4,3 +4,5 @@ export const statusColors: Record<string, string> = {
   ongoing: 'bg-blue-500',
   upcoming: 'bg-amber-500',
 };
+
+export const supportContact = '+233 (0) 559 617 959';
