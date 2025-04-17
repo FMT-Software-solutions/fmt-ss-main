@@ -1,11 +1,9 @@
 'use client';
 
-import { usePaystackPayment } from 'react-paystack';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { usePaystackPayment } from 'react-paystack';
 import { HookConfig } from 'react-paystack/dist/types';
-import { useEffect, useState } from 'react';
-import { useHostname } from '@/hooks/use-hostname';
 
 interface PaystackPaymentProps {
   email: string;
@@ -38,30 +36,7 @@ export function PaystackButtonClient({
   isProcessing = false,
   isValid = true,
 }: PaystackPaymentProps) {
-  const [publicKey, setPublicKey] = useState<string>('');
-  const { isMainDomain, isClient } = useHostname();
-
-  useEffect(() => {
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    // Use live key only on production and main domain
-    if (isProduction && isMainDomain) {
-      setPublicKey(process.env.NEXT_PUBLIC_PAYSTACK_LIVE_PUBLIC_KEY || '');
-    } else {
-      // Use test key for development or non-main domains
-      setPublicKey(process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || '');
-    }
-  }, [isMainDomain]);
-
-  // Don't render payment button until we're on client and keys are ready
-  if (!isClient || !publicKey) {
-    return (
-      <Button className="w-full" size="lg" disabled>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading...
-      </Button>
-    );
-  }
+  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 
   const config: HookConfig = {
     reference: getOrderId(),
