@@ -8,10 +8,19 @@ export function useHostname() {
   useEffect(() => {
     // Only access window after component is mounted on client
     setIsClient(true);
+
+    // Safe check for window object
     if (typeof window !== 'undefined') {
-      const currentHostname = window.location.hostname;
-      setHostname(currentHostname);
-      setIsMainDomain(currentHostname === 'fmtsoftware.com');
+      try {
+        const currentHostname = window.location.hostname;
+        setHostname(currentHostname);
+        setIsMainDomain(currentHostname === 'fmtsoftware.com');
+      } catch (error) {
+        console.error('Error accessing window.location:', error);
+        // Set defaults if window access fails
+        setHostname('');
+        setIsMainDomain(false);
+      }
     }
   }, []);
 
