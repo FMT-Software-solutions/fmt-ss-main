@@ -13,14 +13,15 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto"
+          className="text-center max-w-4xl mx-auto"
         >
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
             Innovative Software Solutions
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
-            Building public projects and premium applications that address real
-            challenges across all sectors to accelerate growth and progress.
+            We provide solutions to your software development needs. We build
+            web apps, mobile apps, and desktop apps that address real challenges
+            across all sectors to accelerate growth and progress.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button size="lg" asChild>

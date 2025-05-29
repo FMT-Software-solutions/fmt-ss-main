@@ -3,6 +3,8 @@ import HeroSection from './HeroSection';
 import FeaturedApps from './FeaturedApps';
 import FeaturesSection from './FeaturesSection';
 import NewsletterSection from './NewsletterSection';
+import ProjectsSection from './ProjectsSection';
+import { projects } from '@/consts/projects';
 
 export const metadata: Metadata = {
   title: 'FMT Software Solutions - Home',
@@ -16,6 +18,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col">
       <HeroSection />
       <FeaturedApps />
+      <ProjectsSection projects={projects} />
       <FeaturesSection />
       <NewsletterSection />
     </main>
