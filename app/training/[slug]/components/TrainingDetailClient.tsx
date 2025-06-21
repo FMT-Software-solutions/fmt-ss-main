@@ -81,7 +81,12 @@ export default function TrainingDetailClient({
 
           {/* Video Preview */}
           {training.videoUrl && (
-            <VideoPlayer videoUrl={training.videoUrl} title={training.title} />
+            <div className="mt-8">
+              <VideoPlayer
+                videoUrl={training.videoUrl}
+                title={training.title}
+              />
+            </div>
           )}
         </motion.div>
       </div>

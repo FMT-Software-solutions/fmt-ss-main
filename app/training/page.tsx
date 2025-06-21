@@ -3,6 +3,11 @@ import TrainingHero from './components/TrainingHero';
 import TrainingList from './components/TrainingList';
 import { getAllTrainings, getAllTrainingTypes } from '@/lib/sanity';
 
+// Disable caching for immediate updates
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export const metadata: Metadata = {
   title: 'Training Programs | FMT Software Solutions',
   description:

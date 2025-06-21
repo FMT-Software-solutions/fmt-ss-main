@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 import TrainingRegistrationEmail from '@/emails/TrainingRegistrationEmail';
 import { client } from '@/sanity/lib/client';
+import { trainingBySlugWithLinksQuery } from '@/sanity/lib/queries';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -29,6 +30,18 @@ export async function POST(request: Request) {
         { error: 'Registration is closed. Maximum participants reached.' },
         { status: 400 }
       );
+    }
+
+    // Fetch training data with event links for email purposes
+    let trainingWithLinks;
+    try {
+      trainingWithLinks = await client.fetch(trainingBySlugWithLinksQuery, {
+        slug: training.slug.current,
+      });
+    } catch (error) {
+      console.error('Error fetching training with links:', error);
+      // Use the provided training data as fallback
+      trainingWithLinks = training;
     }
 
     // For paid trainings, just create a temporary registration record
@@ -63,6 +76,7 @@ export async function POST(request: Request) {
         registrationId: data.id,
         amount: training.price,
         registrationData: data,
+        trainingWithLinks, // Include training data with links for payment API
       });
     }
 
@@ -91,15 +105,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send confirmation email for free trainings
+    // Send confirmation email for free trainings using training data with links
     const { error: emailError } = await resend.emails.send({
       from: 'training@fmtsoftware.com',
       to: email,
-      subject: `Registration Confirmation: ${training.title}`,
+      subject: `Registration Confirmation: ${trainingWithLinks.title}`,
       react: TrainingRegistrationEmail({
         firstName,
-        training,
-        registrationData: data,
+        training: trainingWithLinks,
       }),
     });
 
@@ -110,13 +123,21 @@ export async function POST(request: Request) {
 
     // Update participant count for free trainings
     try {
-      await client
+      const result = await client
         .patch(training._id)
         .inc({ registeredParticipants: 1 })
         .commit();
     } catch (sanityError) {
       console.error('Error updating Sanity document:', sanityError);
-      // Log error but don't fail the registration
+      // Try to set the field if it doesn't exist
+      try {
+        await client
+          .patch(training._id)
+          .set({ registeredParticipants: 1 })
+          .commit();
+      } catch (initError) {
+        console.error('Error initializing participant count:', initError);
+      }
     }
 
     return Response.json({

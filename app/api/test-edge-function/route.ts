@@ -35,8 +35,6 @@ export async function GET() {
       total: 100,
     };
 
-    console.log('Testing edge function with test data');
-
     // Call the edge function
     const { data, error } = await supabase.functions.invoke(
       'create-purchase-user',

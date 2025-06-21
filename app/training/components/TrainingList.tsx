@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ITrainingListItem } from '@/types/training';
 import TrainingCard from './TrainingCard';
 import TrainingFilters from './TrainingFilters';
@@ -17,16 +17,16 @@ export default function TrainingList({
   trainings,
   trainingTypes,
 }: TrainingListProps) {
+  const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date-asc');
 
-  // Filter trainings based on search query and filters
-  const filteredTrainings = trainings
-    .filter((training) => {
+  const filteredTrainings = useMemo(() => {
+    return trainings.filter((training) => {
       // Search filter
       const matchesSearch =
+        searchQuery === '' ||
         training.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         training.shortDescription
           .toLowerCase()
@@ -35,10 +35,10 @@ export default function TrainingList({
           tag.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-      // Type filter
+      // Type filter - handle both old and new schema
       const matchesType =
         selectedType === 'all' ||
-        training.trainingType.slug.current === selectedType;
+        checkTrainingTypeMatch(training, selectedType);
 
       // Price filter
       const matchesPrice =
@@ -47,48 +47,44 @@ export default function TrainingList({
         (priceFilter === 'paid' && !training.isFree);
 
       return matchesSearch && matchesType && matchesPrice;
-    })
-    .sort((a, b) => {
-      // Sort by date or price
-      if (sortBy === 'date-asc') {
-        return (
-          new Date(a.startDate || '').getTime() -
-          new Date(b.startDate || '').getTime()
-        );
-      } else if (sortBy === 'date-desc') {
-        return (
-          new Date(b.startDate || '').getTime() -
-          new Date(a.startDate || '').getTime()
-        );
-      } else if (sortBy === 'price-asc') {
-        return a.price - b.price;
-      } else if (sortBy === 'price-desc') {
-        return b.price - a.price;
-      }
-      return 0;
     });
+  }, [trainings, selectedType, searchQuery, priceFilter]);
+
+  // Helper function to check if training matches selected type
+  const checkTrainingTypeMatch = (
+    training: ITrainingListItem,
+    selectedType: string
+  ): boolean => {
+    // Check new trainingTypes array first
+    if (training.trainingTypes && training.trainingTypes.length > 0) {
+      return training.trainingTypes.some(
+        (type) => type.slug?.current === selectedType
+      );
+    }
+
+    // Fall back to old single trainingType
+    if (training.trainingType && training.trainingType.slug) {
+      return training.trainingType.slug.current === selectedType;
+    }
+
+    return false;
+  };
 
   return (
-    <div className="py-8">
+    <div className="space-y-8">
       <TrainingFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedType={selectedType}
         setSelectedType={setSelectedType}
+        setSearchQuery={setSearchQuery}
+        searchQuery={searchQuery}
+        selectedType={selectedType}
+        trainingTypes={trainingTypes}
         priceFilter={priceFilter}
         setPriceFilter={setPriceFilter}
         sortBy={sortBy}
         setSortBy={setSortBy}
-        trainingTypes={trainingTypes}
       />
 
-      {filteredTrainings.length > 0 ? (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-8">
-          {filteredTrainings.map((training) => (
-            <TrainingCard key={training._id} training={training} />
-          ))}
-        </div>
-      ) : (
+      {filteredTrainings.length === 0 ? (
         <EmptyState
           icon={trainings.length === 0 ? Calendar : PackageSearch}
           title={
@@ -97,9 +93,9 @@ export default function TrainingList({
               : 'No matching training programs'
           }
           description={
-            trainings.length === 0
-              ? "We don't have any training programs available at the moment. Please check back later."
-              : "We couldn't find any training programs matching your filters. Try adjusting your search criteria."
+            searchQuery || selectedType !== 'all'
+              ? 'Try adjusting your search or filter criteria'
+              : 'Check back soon for upcoming training programs'
           }
         >
           {trainings.length > 0 && (
@@ -116,7 +112,19 @@ export default function TrainingList({
             </Button>
           )}
         </EmptyState>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredTrainings.map((training) => (
+            <TrainingCard key={training._id} training={training} />
+          ))}
+        </div>
       )}
+
+      {/* Training count */}
+      <div className="text-center text-sm text-muted-foreground">
+        Showing {filteredTrainings.length} of {trainings.length} training
+        {trainings.length !== 1 ? 's' : ''}
+      </div>
     </div>
   );
 }

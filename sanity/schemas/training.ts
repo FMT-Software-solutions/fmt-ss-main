@@ -80,11 +80,79 @@ export default defineType({
       description: 'Is this a free training program?',
     }),
     defineField({
-      name: 'trainingType',
-      title: 'Training Type',
-      type: 'reference',
-      to: [{ type: 'trainingType' }],
-      validation: (Rule) => Rule.required(),
+      name: 'trainingTypes',
+      title: 'Training Types',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'trainingType' }],
+        },
+      ],
+      validation: (Rule) => Rule.required().min(1),
+      description:
+        'Select one or more training types (e.g., Online, In-person)',
+    }),
+    defineField({
+      name: 'registrationLink',
+      title: 'Registration Link',
+      type: 'object',
+      fields: [
+        {
+          name: 'linkType',
+          title: 'Link Type',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'Internal (within this platform)', value: 'internal' },
+              { title: 'External (outside platform)', value: 'external' },
+            ],
+            layout: 'radio',
+          },
+          validation: (Rule) => Rule.required(),
+          initialValue: 'internal',
+        },
+        {
+          name: 'internalPath',
+          title: 'Internal Path',
+          type: 'string',
+          description:
+            'Route path within this project (e.g., /training/register)',
+          hidden: ({ parent }) => parent?.linkType !== 'internal',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              const parent = context.parent as { linkType?: string };
+              if (parent?.linkType === 'internal' && !value) {
+                return 'Internal path is required when link type is internal';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'externalUrl',
+          title: 'External URL',
+          type: 'url',
+          description: 'Full URL to external registration platform',
+          hidden: ({ parent }) => parent?.linkType !== 'external',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              const parent = context.parent as { linkType?: string };
+              if (parent?.linkType === 'external' && !value) {
+                return 'External URL is required when link type is external';
+              }
+              return true;
+            }),
+        },
+        {
+          name: 'linkText',
+          title: 'Link Text',
+          type: 'string',
+          description: 'Text to display on the registration button/link',
+          initialValue: 'Register Now',
+          validation: (Rule) => Rule.required(),
+        },
+      ],
+      description: 'Custom registration link for this training',
     }),
     defineField({
       name: 'startDate',
@@ -103,11 +171,52 @@ export default defineType({
       description: 'For in-person trainings, or "Online" for virtual trainings',
     }),
     defineField({
-      name: 'joiningLink',
-      title: 'Joining Link',
-      type: 'url',
+      name: 'eventLinks',
+      title: 'Event Links',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'trainingType',
+              title: 'Training Type',
+              type: 'reference',
+              to: [{ type: 'trainingType' }],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'link',
+              title: 'Link',
+              type: 'url',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'linkText',
+              title: 'Link Text',
+              type: 'string',
+              description:
+                'Text to describe the link (e.g., "Join Meeting", "View Location")',
+              validation: (Rule) => Rule.required(),
+            },
+          ],
+          preview: {
+            select: {
+              trainingType: 'trainingType.name',
+              linkText: 'linkText',
+              link: 'link',
+            },
+            prepare({ trainingType, linkText, link }) {
+              return {
+                title: `${trainingType}: ${linkText}`,
+                subtitle: link,
+              };
+            },
+          },
+        },
+      ],
       description:
-        'For online trainings: link to join the session. For in-person: directions link (e.g., Google Maps)',
+        'Links for different training types (e.g., online meeting link, in-person location link). These links are only sent via email, not shown on the website.',
     }),
     defineField({
       name: 'instructor',
@@ -196,16 +305,18 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      type: 'trainingType.name',
+      types: 'trainingTypes',
       media: 'mainImage',
       price: 'price',
       isFree: 'isFree',
     },
     prepare(selection) {
-      const { title, type, media, price, isFree } = selection;
+      const { title, types, media, price, isFree } = selection;
+      const trainingTypes =
+        types?.map((type: any) => type.name).join(', ') || 'Training';
       return {
         title,
-        subtitle: `${type || 'Training'} - ${isFree ? 'Free' : `GHS${price}`}`,
+        subtitle: `${trainingTypes} - ${isFree ? 'Free' : `GHS${price}`}`,
         media,
       };
     },

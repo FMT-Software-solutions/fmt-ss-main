@@ -31,7 +31,7 @@ export default function PaymentForm({
     e.preventDefault();
 
     // TODO: Implement actual payment processing
-    console.log('Processing payment:', { paymentData, registrationData });
+    // console.log('Processing payment:', { paymentData, registrationData });
 
     // Simulate payment processing
     toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {

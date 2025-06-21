@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITraining } from '@/types/training';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface TrainingRegistrationProps {
@@ -27,6 +27,37 @@ export default function TrainingRegistration({
   const maxParticipants = training.maxParticipants || 0;
   const availableSpots = Math.max(0, maxParticipants - registeredParticipants);
   const isFull = hasMaxParticipants && availableSpots === 0;
+
+  // Handle registration link logic
+  const getRegistrationLink = () => {
+    // Check if new registrationLink field exists
+    if (training.registrationLink) {
+      const { linkType, internalPath, externalUrl } = training.registrationLink;
+
+      if (linkType === 'external' && externalUrl) {
+        return {
+          href: externalUrl,
+          isExternal: true,
+        };
+      } else if (linkType === 'internal' && internalPath) {
+        return {
+          href: `/training/${training.slug.current}/register${internalPath}`,
+          isExternal: false,
+        };
+      }
+    }
+
+    // Default behavior for backwards compatibility
+    return {
+      href: `/training/${training.slug.current}/register`,
+      isExternal: false,
+    };
+  };
+
+  const registrationLink = getRegistrationLink();
+  const buttonText =
+    training.registrationLink?.linkText ||
+    (training.isFree ? 'Register Now' : 'Enroll Now');
 
   return (
     <Card
@@ -82,11 +113,24 @@ export default function TrainingRegistration({
                 </Badge>
               )}
             </div>
-            <Button asChild className="w-full" size="lg">
-              <Link href={`/training/${training.slug.current}/register`}>
-                {training.isFree ? 'Register Now' : 'Enroll Now'}
-              </Link>
-            </Button>
+
+            {registrationLink.isExternal ? (
+              <Button asChild className="w-full" size="lg">
+                <Link
+                  href={registrationLink.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2"
+                >
+                  {buttonText}
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild className="w-full" size="lg">
+                <Link href={registrationLink.href}>{buttonText}</Link>
+              </Button>
+            )}
           </>
         )}
       </CardContent>

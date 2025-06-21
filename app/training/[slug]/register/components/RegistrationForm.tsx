@@ -57,6 +57,7 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [registrationData, setRegistrationData] = useState<any>(null);
+  const [trainingWithLinks, setTrainingWithLinks] = useState<any>(null);
   const [paymentStep, setPaymentStep] = useState(false);
   const [registrationError, setRegistrationError] = useState<string | null>(
     null
@@ -122,6 +123,7 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
 
       // For paid trainings, show payment form
       setRegistrationData(data.registrationData);
+      setTrainingWithLinks(data.trainingWithLinks);
       setPaymentStep(true);
       toast({
         title: 'Please complete payment',
@@ -157,7 +159,7 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
           registrationId: registrationData.id,
           paymentReference: reference.reference,
           amount: training.price,
-          trainingData: training,
+          trainingData: trainingWithLinks || training,
         }),
       });
 

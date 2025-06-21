@@ -11,14 +11,33 @@ export interface ITraining {
   duration: string;
   price: number; // 0 for free trainings
   isFree: boolean;
-  trainingType: {
+  trainingType?: {
     name: string;
     slug: { type?: string; current: string };
+  };
+  trainingTypes?: {
+    name: string;
+    slug: { type?: string; current: string };
+  }[];
+  registrationLink?: {
+    linkType: 'internal' | 'external';
+    internalPath?: string;
+    externalUrl?: string;
+    linkText?: string;
   };
   startDate?: string;
   endDate?: string;
   location?: string;
-  joiningLink?: string; // For online: joining link, for in-person: directions
+  joiningLink?: string; // Deprecated - kept for backwards compatibility
+  eventLinks?: {
+    trainingType: {
+      _id: string;
+      name: string;
+      slug: { type?: string; current: string };
+    };
+    link: string;
+    linkText: string;
+  }[];
   instructor: {
     name: string;
     bio: string;
@@ -46,10 +65,14 @@ export interface ITrainingListItem {
   duration: string;
   price: number;
   isFree: boolean;
-  trainingType: {
+  trainingType?: {
     name: string;
     slug: { type?: string; current: string };
   };
+  trainingTypes?: {
+    name: string;
+    slug: { type?: string; current: string };
+  }[];
   startDate?: string;
   location?: string;
   tags: string[];
@@ -66,4 +89,35 @@ export interface IRegistrationData {
   jobTitle?: string;
   specialRequirements?: string;
   agreeToTerms: boolean;
+}
+
+// Type for custom training registration
+export interface ICustomTrainingRegistration {
+  id: string;
+  training_id: string;
+  training_slug: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  details: {
+    about?: string;
+    experience: string[];
+    expectations?: string;
+    [key: string]: any; // Allow for additional custom fields
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+// Type for custom registration form data
+export interface ICustomRegistrationFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  about: string;
+  experience: string[];
+  expectations: string;
 }

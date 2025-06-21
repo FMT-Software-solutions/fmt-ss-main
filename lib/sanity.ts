@@ -91,7 +91,14 @@ export async function getPremiumAppBySlug(
 // Function to fetch all training programs
 export async function getAllTrainings(): Promise<ITrainingListItem[]> {
   try {
-    const trainings = await client.fetch(allTrainingsQuery);
+    const trainings = await client.fetch(
+      allTrainingsQuery,
+      {},
+      {
+        cache: 'no-store',
+        next: { revalidate: 0 },
+      }
+    );
     return trainings || [];
   } catch (error) {
     console.error('Error fetching trainings:', error);
@@ -115,7 +122,15 @@ export async function getTrainingBySlug(
   slug: string
 ): Promise<ITraining | null> {
   try {
-    const training = await client.fetch(trainingBySlugQuery, { slug });
+    // Use client with cache disabled for immediate updates
+    const training = await client.fetch(
+      trainingBySlugQuery,
+      { slug },
+      {
+        cache: 'no-store',
+        next: { revalidate: 0 },
+      }
+    );
 
     if (!training) return null;
 

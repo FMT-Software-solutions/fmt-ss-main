@@ -186,6 +186,12 @@ export const allTrainingsQuery = groq`
       slug,
       icon
     },
+    trainingTypes[]->{
+      name,
+      slug,
+      icon
+    },
+    registrationLink,
     startDate,
     location,
     tags,
@@ -210,6 +216,12 @@ export const featuredTrainingsQuery = groq`
       slug,
       icon
     },
+    trainingTypes[]->{
+      name,
+      slug,
+      icon
+    },
+    registrationLink,
     startDate,
     location,
     tags,
@@ -218,7 +230,7 @@ export const featuredTrainingsQuery = groq`
   }
 `;
 
-// Query to get a single training program by slug
+// Query to get a single training program by slug (public - no event links)
 export const trainingBySlugQuery = groq`
   *[_type == "training" && slug.current == $slug][0] {
     _id,
@@ -236,10 +248,63 @@ export const trainingBySlugQuery = groq`
       slug,
       icon
     },
+    trainingTypes[]->{
+      name,
+      slug,
+      icon
+    },
+    registrationLink,
     startDate,
     endDate,
     location,
-    joiningLink,
+    instructor,
+    prerequisites,
+    syllabus,
+    maxParticipants,
+    registeredParticipants,
+    tags,
+    featured,
+    publishedAt
+  }
+`;
+
+// Query to get a single training program by slug with event links (for admin/email use)
+export const trainingBySlugWithLinksQuery = groq`
+  *[_type == "training" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    videoUrl,
+    description,
+    shortDescription,
+    duration,
+    price,
+    isFree,
+    trainingType->{
+      name,
+      slug,
+      icon
+    },
+    trainingTypes[]->{
+      name,
+      slug,
+      icon
+    },
+    registrationLink,
+    startDate,
+    endDate,
+    location,
+    eventLinks[]{
+      trainingType->{
+        _id,
+        name,
+        slug,
+        icon
+      },
+      link,
+      linkText
+    },
     instructor,
     prerequisites,
     syllabus,

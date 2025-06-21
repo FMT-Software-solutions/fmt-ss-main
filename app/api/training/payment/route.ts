@@ -52,13 +52,21 @@ export async function POST(request: Request) {
 
     // Increment participant count in Sanity
     try {
-      await client
+      const result = await client
         .patch(registration.training_id)
         .inc({ registeredParticipants: 1 })
         .commit();
     } catch (sanityError) {
       console.error('Error updating Sanity document:', sanityError);
-      // We log the error but don't fail the payment process
+      // Try to set the field if it doesn't exist
+      try {
+        await client
+          .patch(registration.training_id)
+          .set({ registeredParticipants: 1 })
+          .commit();
+      } catch (initError) {
+        console.error('Error initializing participant count:', initError);
+      }
     }
 
     // Send registration confirmation email first
@@ -70,7 +78,6 @@ export async function POST(request: Request) {
         react: TrainingRegistrationEmail({
           firstName: registration.first_name,
           training: trainingData || { title: 'Training Program' },
-          registrationData: registration,
         }),
       });
     } catch (emailError) {

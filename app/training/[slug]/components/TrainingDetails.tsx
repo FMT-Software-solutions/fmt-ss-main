@@ -8,6 +8,7 @@ import {
   Users,
   Link as LinkIcon,
   AlertCircle,
+  Tag,
 } from 'lucide-react';
 import { ITraining } from '@/types/training';
 import { formatDateTime, getRelativeTimeString } from '@/lib/date';
@@ -43,12 +44,44 @@ export default function TrainingDetails({ training }: TrainingDetailsProps) {
     ? Math.min(100, (registeredParticipants / maxParticipants) * 100)
     : 0;
 
+  // Handle both old single trainingType and new multiple trainingTypes for backwards compatibility
+  const getTrainingTypes = () => {
+    if (training.trainingTypes && training.trainingTypes.length > 0) {
+      return training.trainingTypes;
+    }
+    // Backwards compatibility: if old trainingType exists, use it
+    if ((training as any).trainingType) {
+      return [(training as any).trainingType];
+    }
+    return [];
+  };
+
+  const trainingTypes = getTrainingTypes();
+
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle>Training Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {trainingTypes.length > 0 && (
+          <div className="flex items-center">
+            <Tag className="h-5 w-5 mr-3 text-muted-foreground" />
+            <div>
+              <p className="font-medium">
+                Training Type{trainingTypes.length > 1 ? 's' : ''}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {trainingTypes.map((type, index) => (
+                  <Badge key={index} variant="secondary">
+                    {type.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center">
           <Clock className="h-5 w-5 mr-3 text-muted-foreground" />
           <div>
@@ -66,7 +99,7 @@ export default function TrainingDetails({ training }: TrainingDetailsProps) {
                 {formatDateTime(training.startDate)}
                 {training.endDate && ` - ${formatDateTime(training.endDate)}`}
                 <span className="block text-sm mt-1 text-primary">
-                  {getRelativeTimeString(training.startDate)}
+                  Event Starts {getRelativeTimeString(training.startDate)}
                 </span>
               </p>
             </div>
@@ -79,32 +112,6 @@ export default function TrainingDetails({ training }: TrainingDetailsProps) {
             <div>
               <p className="font-medium">Location</p>
               <p className="text-muted-foreground">{training.location}</p>
-              {training.joiningLink && (
-                <div className="mt-2">
-                  {isValidJoiningLink ? (
-                    <Link
-                      href={training.joiningLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center"
-                      >
-                        <LinkIcon className="h-4 w-4 mr-2" />
-                        {training.location.toLowerCase() === 'online'
-                          ? 'Join Session'
-                          : 'Get Directions'}
-                      </Button>
-                    </Link>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {training.joiningLink}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         )}

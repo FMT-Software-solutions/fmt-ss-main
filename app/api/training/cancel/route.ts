@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const body = await request.json();
-    const { registrationId, reason } = body;
+    const { registrationId, reason, registrationType = 'regular' } = body;
 
     if (!registrationId) {
       return Response.json(
@@ -17,9 +17,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Determine which table to query based on registration type
+    const tableName =
+      registrationType === 'custom'
+        ? 'custom_training_registrations'
+        : 'training_registrations';
+
     // Get the registration details
     const { data: registration, error: fetchError } = await supabase
-      .from('training_registrations')
+      .from(tableName)
       .select('*')
       .eq('id', registrationId)
       .single();
@@ -37,7 +43,7 @@ export async function POST(request: Request) {
 
     // Update the registration status to cancelled
     const { error: updateError } = await supabase
-      .from('training_registrations')
+      .from(tableName)
       .update({
         status: 'cancelled',
       })
@@ -54,7 +60,7 @@ export async function POST(request: Request) {
     // Update Sanity document if needed
     if (shouldUpdateCount) {
       try {
-        await sanityClient
+        const result = await sanityClient
           .patch(registration.training_id)
           .dec({ registeredParticipants: 1 })
           .commit();

@@ -9,6 +9,7 @@ import {
   Text,
   Link,
   Hr,
+  Button,
 } from '@react-email/components';
 import { formatCustom } from '@/lib/date';
 import { supportContact } from '@/consts';
@@ -16,17 +17,60 @@ import { supportContact } from '@/consts';
 interface TrainingRegistrationEmailProps {
   firstName: string;
   training: any;
-  registrationData: any;
 }
 
 export const TrainingRegistrationEmail = ({
   firstName,
   training,
-  registrationData,
 }: TrainingRegistrationEmailProps) => {
   const formattedDate = training.startDate
     ? formatCustom(training.startDate, 'EEEE, MMMM d, yyyy h:mm a')
     : 'To be announced';
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://fmtsoftware.com';
+  const trainingUrl = `${baseUrl}/training/${training.slug.current}`;
+
+  // Google Calendar link generation
+  const generateCalendarLink = () => {
+    if (!training.startDate) return null;
+
+    const startDate = new Date(training.startDate);
+    const endDate = training.endDate
+      ? new Date(training.endDate)
+      : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours
+
+    const formatDate = (date: Date) =>
+      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    // Build event links section for calendar details
+    let eventLinksText = '';
+    if (training.eventLinks && training.eventLinks.length > 0) {
+      eventLinksText = '\n\nEvent Links:\n';
+      training.eventLinks.forEach((eventLink: any) => {
+        eventLinksText += `${eventLink.trainingType?.name}: ${eventLink.link}\n`;
+      });
+    }
+
+    const details = `Training: ${training.title}
+
+Duration: ${training.duration}
+
+Location: ${training.location || 'TBA'}${eventLinksText}
+
+More info: ${trainingUrl}`;
+
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: training.title,
+      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
+      details: details,
+      location: training.location || '',
+    });
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
+  const calendarLink = generateCalendarLink();
 
   return (
     <Html>
@@ -62,16 +106,35 @@ export const TrainingRegistrationEmail = ({
               {training.location || 'To be announced'}
             </Text>
 
-            {training.joiningLink && (
+            {training.eventLinks && training.eventLinks.length > 0 && (
               <>
-                <Text style={labelStyle}>Joining Link:</Text>
-                <Link href={training.joiningLink} style={linkStyle}>
-                  {training.location?.toLowerCase() === 'online'
-                    ? 'Click here to join the session'
-                    : 'View location details'}
-                </Link>
+                <Text style={labelStyle}>Event Links:</Text>
+                {training.eventLinks.map((eventLink: any, index: number) => (
+                  <div key={index} style={{ marginBottom: '10px' }}>
+                    <Text style={valueStyle}>
+                      <strong>{eventLink.trainingType?.name}:</strong>{' '}
+                      <Link href={eventLink.link} style={linkStyle}>
+                        {eventLink.linkText}
+                      </Link>
+                    </Text>
+                  </div>
+                ))}
               </>
             )}
+
+            <Hr style={hrStyle} />
+
+            <div style={buttonContainerStyle}>
+              <Button href={trainingUrl} style={primaryButtonStyle}>
+                View Training Details
+              </Button>
+
+              {calendarLink && (
+                <Button href={calendarLink} style={secondaryButtonStyle}>
+                  📅 Add to Google Calendar
+                </Button>
+              )}
+            </div>
 
             <Hr style={hrStyle} />
 
@@ -164,6 +227,39 @@ const linkStyle = {
 const hrStyle = {
   margin: '25px 0',
   borderColor: '#e9ecef',
+};
+
+const buttonContainerStyle = {
+  textAlign: 'center' as const,
+  margin: '30px 0',
+};
+
+const primaryButtonStyle = {
+  backgroundColor: '#3b82f6',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontWeight: 'bold' as const,
+  fontSize: '16px',
+  display: 'inline-block',
+  margin: '8px',
+  border: 'none',
+  cursor: 'pointer',
+};
+
+const secondaryButtonStyle = {
+  backgroundColor: '#8b5cf6',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontWeight: 'bold' as const,
+  fontSize: '16px',
+  display: 'inline-block',
+  margin: '8px',
+  border: 'none',
+  cursor: 'pointer',
 };
 
 const footerStyle = {
