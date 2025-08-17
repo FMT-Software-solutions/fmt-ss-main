@@ -4,4 +4,5 @@ export interface NavigationLink {
   href: string;
   icon: LucideIcon;
   label: string;
+  featureFlag?: string;
 }

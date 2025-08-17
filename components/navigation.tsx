@@ -12,22 +12,70 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from '@/components/ui/navigation-menu';
-import { BookOpen, Download, GraduationCap, Lightbulb } from 'lucide-react';
+import {
+  BookOpen,
+  Download,
+  GraduationCap,
+  Lightbulb,
+  ShoppingBag,
+} from 'lucide-react';
 import { MobileMenu } from '@/components/MobileMenu';
 import type { NavigationLink } from '@/types/navigation';
 import { CartIcon } from '@/app/store/components/CartIcon';
+import { usePlatformConfig } from '@/hooks/use-platform-config';
 
-// Navigation links data - extracted to avoid recreating
-const navigationLinks: NavigationLink[] = [
-  { href: '/projects', icon: Lightbulb, label: 'Public Projects' },
-  { href: '/store', icon: BookOpen, label: 'Premium Apps' },
-  { href: '/free-apps', icon: Download, label: 'Free Apps' },
-  { href: '/training', icon: GraduationCap, label: 'Training' },
+// All possible navigation links
+const allNavigationLinks: NavigationLink[] = [
+  {
+    href: '/projects',
+    icon: Lightbulb,
+    label: 'Public Projects',
+    featureFlag: 'public_projects',
+  },
+  {
+    href: '/store',
+    icon: ShoppingBag,
+    label: 'Marketplace',
+    featureFlag: 'marketplace',
+  },
+  {
+    href: '/free-apps',
+    icon: Download,
+    label: 'Free Apps',
+    featureFlag: 'free_apps',
+  },
+  {
+    href: '/training',
+    icon: GraduationCap,
+    label: 'Training',
+    featureFlag: 'training',
+  },
 ];
 
 export function Navigation() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
+  const { config, loading } = usePlatformConfig();
+
+  if (pathname.includes('/admin')) {
+    return null;
+  }
+
+  // Filter navigation links based on feature flags
+  const navigationLinks = React.useMemo(() => {
+    if (!config?.user_feature_flags) {
+      return allNavigationLinks; // Show all if config not loaded yet
+    }
+
+    return allNavigationLinks.filter((link) => {
+      if (!link.featureFlag) return true; // Show links without feature flags
+      return (
+        config.user_feature_flags[
+          link.featureFlag as keyof typeof config.user_feature_flags
+        ] === true
+      );
+    });
+  }, [config?.user_feature_flags]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
