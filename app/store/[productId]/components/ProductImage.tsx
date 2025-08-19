@@ -18,16 +18,26 @@ export default function ProductImage({
 }: ProductImageProps) {
   const imageUrl = getSanityImageUrl(mainImage);
 
+  // Fallback image if no image URL is available
+  const fallbackImage = '/images/placeholder-app.svg';
+  const finalImageUrl = imageUrl || fallbackImage;
+
   return (
     <div className="relative h-full group">
-      <div className="aspect-video md:aspect-auto md:h-full relative rounded-l-lg overflow-hidden">
+      <div className="relative h-full rounded-lg overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent z-10"></div>
         <Image
-          src={imageUrl}
+          src={finalImageUrl}
           alt={title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          width={1000}
+          height={1000}
+          className="object-cover group-hover:scale-105 transition-transform duration-500 w-full h-full"
           priority
+          onError={(e) => {
+            console.error('Image failed to load:', finalImageUrl);
+            // Set fallback image on error
+            e.currentTarget.src = fallbackImage;
+          }}
         />
       </div>
     </div>

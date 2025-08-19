@@ -1,20 +1,10 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  Link as LinkIcon,
-  AlertCircle,
-  Tag,
-} from 'lucide-react';
-import { ITraining } from '@/types/training';
-import { formatDateTime, getRelativeTimeString } from '@/lib/date';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatDateTime, getRelativeTimeString } from '@/lib/date';
+import { ITraining } from '@/types/training';
+import { AlertCircle, Calendar, Clock, MapPin, Tag, Users } from 'lucide-react';
 
 interface TrainingDetailsProps {
   training: ITraining;
@@ -133,7 +123,9 @@ export default function TrainingDetails({ training }: TrainingDetailsProps) {
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className={`h-2 rounded-full ${isFull ? 'bg-destructive' : 'bg-primary'}`}
+                  className={`h-2 rounded-full ${
+                    isFull ? 'bg-destructive' : 'bg-primary'
+                  }`}
                   style={{ width: `${registrationPercentage}%` }}
                 ></div>
               </div>

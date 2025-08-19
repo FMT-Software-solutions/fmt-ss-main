@@ -7,12 +7,46 @@ import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState';
-import { getSanityImageUrl } from '@/lib/utils';
+import { getSanityImageUrl, getCurrentPrice, isPromotionActive } from '@/lib/utils';
 import { CartItem } from '../../types/cart';
 
 export default function CartContent() {
-  const { items, total, removeItem, updateQuantity } = useCartStore();
+  const { items, total, removeItem, updateQuantity, isLoading } = useCartStore();
   const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
+          <p className="text-muted-foreground">Loading your cart items...</p>
+        </div>
+        <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-4">
+                <div className="flex gap-4">
+                  <div className="aspect-square h-24 w-24 bg-muted rounded-lg animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                    <div className="h-3 bg-muted rounded w-3/4 animate-pulse" />
+                    <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="h-4 bg-muted rounded animate-pulse" />
+              <div className="h-4 bg-muted rounded animate-pulse" />
+              <div className="h-10 bg-muted rounded animate-pulse" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -39,7 +73,24 @@ export default function CartContent() {
 
       <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
         <div className="space-y-4">
-          {items.map((item: CartItem) => (
+          {items.map((item: CartItem) => {
+            // Skip items that don't have product data loaded yet
+            if (!item.product) {
+              return (
+                <Card key={item.productId} className="p-4">
+                  <div className="flex gap-4">
+                    <div className="aspect-square h-24 w-24 bg-muted rounded-lg animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse" />
+                      <div className="h-3 bg-muted rounded w-3/4 animate-pulse" />
+                      <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                    </div>
+                  </div>
+                </Card>
+              );
+            }
+            
+            return (
             <Card key={item.productId} className="p-4">
               <div className="flex gap-4">
                 <div className="relative aspect-square h-24 w-24 overflow-hidden rounded-lg">
@@ -56,6 +107,25 @@ export default function CartContent() {
                     <p className="text-sm text-muted-foreground">
                       {item.product.shortDescription}
                     </p>
+                    <div className="text-sm mt-1">
+                      {isPromotionActive(item.product) ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600 font-semibold">
+                            GHS {getCurrentPrice(item.product).toFixed(2)}
+                          </span>
+                          <span className="text-muted-foreground line-through">
+                            GHS {item.product.price.toFixed(2)}
+                          </span>
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                            SALE
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          GHS {item.product.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -91,17 +161,18 @@ export default function CartContent() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">
-                    GHS {(item.product.price * item.quantity).toFixed(2)}
+                    GHS {(getCurrentPrice(item.product) * item.quantity).toFixed(2)}
                   </p>
                   {item.quantity > 1 && (
                     <p className="text-sm text-muted-foreground">
-                      GHS {item.product.price.toFixed(2)} each
+                      GHS {getCurrentPrice(item.product).toFixed(2)} each
                     </p>
                   )}
                 </div>
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         <div className="space-y-4">

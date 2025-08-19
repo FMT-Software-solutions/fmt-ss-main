@@ -86,35 +86,46 @@ export const projectsByStatusQuery = groq`
   }
 `;
 
-// Query to get all premium apps
+// Query to get all premium apps (published only)
 export const allPremiumAppsQuery = groq`
-  *[_type == "premiumApp"] | order(publishedAt desc) {
+  *[_type == "premiumApp" && isPublished == true] | order(publishedAt desc) {
     _id,
     title,
     slug,
+    isPublished,
     mainImage,
     shortDescription,
     "sectors": sectors[]->name,
     price,
+    promotion {
+      hasPromotion,
+      discountPrice,
+      startDate,
+      endDate,
+      isActive
+    },
     features,
     tags,
     publishedAt
   }
 `;
 
-// Query to get a single premium app by slug
+// Query to get a single premium app by slug (published only)
 export const premiumAppBySlugQuery = groq`
-  *[_type == "premiumApp" && slug.current == $slug][0] {
+  *[_type == "premiumApp" && slug.current == $slug && isPublished == true][0] {
     _id,
     title,
     slug,
+    isPublished,
     mainImage,
     screenshots,
+    video,
     videoUrl,
     description,
     shortDescription,
     "sectors": sectors[]->name,
     price,
+    promotion,
     features,
     systemRequirements,
     platforms[]->{
@@ -376,5 +387,37 @@ export const eventBySlugQuery = groq`
     tags,
     featured,
     publishedAt
+  }
+`;
+
+// Query to get cart items by IDs (only published items)
+export const cartItemsByIdsQuery = groq`
+  *[_type == "premiumApp" && _id in $ids && isPublished == true] {
+    _id,
+    title,
+    slug,
+    isPublished,
+    mainImage,
+    shortDescription,
+    "sectors": sectors[]->name,
+    price,
+    promotion {
+      hasPromotion,
+      discountPrice,
+      startDate,
+      endDate,
+      isActive
+    },
+    features,
+    tags,
+    publishedAt
+  }
+`;
+
+// Query to validate if items are still published and available
+export const validateCartItemsQuery = groq`
+  *[_type == "premiumApp" && _id in $ids] {
+    _id,
+    isPublished
   }
 `;

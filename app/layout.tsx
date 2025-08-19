@@ -7,6 +7,7 @@ import { Navigation } from '../components/navigation';
 import { Footer } from '../components/footer';
 import { PlatformConfigWrapper } from '@/components/providers/PlatformConfigWrapper';
 import { platformConfigServer } from '@/services/config/platformConfigServer';
+import { CartProvider } from './store/components/CartProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,10 +36,12 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Navigation />
-            <main>{children}</main>
-            <Footer />
-            <Toaster />
+            <CartProvider>
+              <Navigation />
+              <main>{children}</main>
+              <Footer />
+              <Toaster />
+            </CartProvider>
           </ThemeProvider>
         </PlatformConfigWrapper>
       </body>

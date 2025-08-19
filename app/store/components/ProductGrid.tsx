@@ -15,7 +15,8 @@ import { useFilters } from './StoreFilters';
 import { IPremiumAppListItem } from '@/types/premium-app';
 import { EmptyState } from '@/components/EmptyState';
 import { PackageSearch } from 'lucide-react';
-import { getSanityImageUrl } from '@/lib/utils';
+import { getSanityImageUrl, getCurrentPrice } from '@/lib/utils';
+import { PriceDisplay } from '@/components/PriceDisplay';
 
 interface ProductGridProps {
   premiumApps: IPremiumAppListItem[];
@@ -41,8 +42,10 @@ export default function ProductGrid({ premiumApps }: ProductGridProps) {
         (category === 'all' || product.sectors?.includes(category))
     )
     .sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
+      if (sortBy === 'price-asc')
+        return getCurrentPrice(a) - getCurrentPrice(b);
+      if (sortBy === 'price-desc')
+        return getCurrentPrice(b) - getCurrentPrice(a);
       if (sortBy === 'name') return a.title.localeCompare(b.title);
       return 0;
     });
@@ -111,7 +114,7 @@ function ProductCard({
             ))}
           </div>
           <div className="flex justify-between items-center mt-auto">
-            <span className="text-2xl font-bold">GHS{product.price}</span>
+            <PriceDisplay product={product} size="md" />
             <Button asChild>
               <Link href={`/store/${product.slug.current}`}>View Details</Link>
             </Button>

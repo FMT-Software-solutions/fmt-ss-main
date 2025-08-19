@@ -2,6 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { PriceDisplay } from '@/components/PriceDisplay';
+import { getCurrentPrice } from '@/lib/utils';
 import { IPremiumApp } from '@/types/premium-app';
 import { CreditCard, ShoppingCart } from 'lucide-react';
 
@@ -16,26 +18,41 @@ export default function ProductCTA({
   onBuyNow,
   onAddToCart,
 }: ProductCTAProps) {
+  const currentPrice = getCurrentPrice(product);
+
   return (
     <Card className="bg-muted mt-8 mb-4 shadow-md">
-      <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-bold">
-            Ready to get started with {product.title}?
-          </h3>
-          <p className="text-muted-foreground">
-            Experience all the amazing features today.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button onClick={onBuyNow} size="lg">
-            <CreditCard className="mr-2 h-5 w-5" />
-            Buy Now
-          </Button>
-          <Button onClick={onAddToCart} size="lg" variant="outline">
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Add to Cart
-          </Button>
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold mb-2">
+              Ready to get started with {product.title}?
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Experience all the amazing features today.
+            </p>
+
+            {/* Pricing Section */}
+            <div className="mb-4">
+              <PriceDisplay product={product} size="md" className="mb-2" />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 min-w-fit">
+            <Button onClick={onBuyNow} size="lg" className="whitespace-nowrap">
+              <CreditCard className="mr-2 h-5 w-5" />
+              Buy Now - GHS {currentPrice.toFixed(2)}
+            </Button>
+            <Button
+              onClick={onAddToCart}
+              size="lg"
+              variant="outline"
+              className="whitespace-nowrap"
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Add to Cart
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -1,0 +1,8 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#f3f4f6"/>
+  <rect x="300" y="200" width="200" height="200" rx="20" fill="#e5e7eb"/>
+  <circle cx="350" cy="250" r="20" fill="#9ca3af"/>
+  <path d="M320 320L350 290L380 320L420 280L480 340V380H320V320Z" fill="#9ca3af"/>
+  <text x="400" y="450" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="24" font-weight="500">App Image</text>
+  <text x="400" y="480" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="16">Loading...</text>
+</svg>

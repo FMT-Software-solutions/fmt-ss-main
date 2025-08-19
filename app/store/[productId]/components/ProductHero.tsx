@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { PriceDisplay } from '@/components/PriceDisplay';
 import { IPremiumApp } from '@/types/premium-app';
 import { motion } from 'framer-motion';
 import { CreditCard, ShoppingCart } from 'lucide-react';
@@ -33,9 +34,12 @@ export default function ProductHero({
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6">
-            <div className="text-2xl md:text-4xl font-bold bg-background/10 backdrop-blur-sm px-6 py-2 rounded-lg text-primary dark:text-white">
-              <span className="text-base  opacity-70 mr-1">GHS</span>
-              {product.price}
+            <div className="flex items-center gap-3">
+              <PriceDisplay
+                product={product}
+                size="lg"
+                className="bg-background/50 backdrop-blur-sm px-6 py-2 rounded-lg"
+              />
             </div>
             <div className="flex gap-3">
               <Button

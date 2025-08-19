@@ -1,6 +1,13 @@
 import { z } from 'zod';
-import { IPremiumApp } from '@/types/premium-app';
+import { IPremiumApp, IDiscountCode } from '@/types/premium-app';
 
+// Simple cart item with only ID and quantity for localStorage
+export interface CartItemStorage {
+  productId: string;
+  quantity: number;
+}
+
+// Full cart item with product details for display
 export interface CartItem {
   productId: string;
   quantity: number;
@@ -10,6 +17,11 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[];
   total: number;
+}
+
+// Storage cart with only IDs
+export interface CartStorage {
+  items: CartItemStorage[];
 }
 
 export const organizationDetailsSchema = z.object({
@@ -26,6 +38,18 @@ export const organizationDetailsSchema = z.object({
 });
 
 export type OrganizationDetails = z.infer<typeof organizationDetailsSchema>;
+
+// Re-export the discount code interface from the main types
+export type { IDiscountCode as DiscountCode } from '@/types/premium-app';
+
+// Checkout state interface
+export interface CheckoutState {
+  subtotal: number;
+  discountAmount: number;
+  finalTotal: number;
+  appliedDiscount: IDiscountCode | null;
+  hasActivePromotions: boolean;
+}
 
 export interface PurchaseRecord {
   id: string;

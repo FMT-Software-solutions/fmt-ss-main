@@ -5,6 +5,7 @@ export const products: IPremiumApp[] = [
     _id: 'project-manager-pro',
     id: 'project-manager-pro',
     title: 'Project Manager Pro',
+    isPublished: true,
     slug: { current: 'project-manager-pro' },
     shortDescription:
       'Streamline your project management with our powerful solution',
@@ -45,6 +46,7 @@ export const products: IPremiumApp[] = [
     _id: 'data-analyzer',
     id: 'data-analyzer',
     title: 'Data Analyzer',
+    isPublished: true,
     slug: { current: 'data-analyzer' },
     shortDescription:
       'Transform your data into actionable insights with advanced analytics',
@@ -84,6 +86,7 @@ export const products: IPremiumApp[] = [
     _id: 'secure-vault',
     id: 'secure-vault',
     title: 'Secure Vault',
+    isPublished: true,
     slug: { current: 'secure-vault' },
     shortDescription:
       'Enterprise-grade security for your sensitive data and documents',

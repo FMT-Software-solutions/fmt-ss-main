@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/components/ui/video-player';
+import CustomVideoPlayer from '@/components/CustomVideoPlayer';
 import { IPremiumApp } from '@/types/premium-app';
 import { motion } from 'framer-motion';
 import { CreditCard } from 'lucide-react';
@@ -16,6 +17,8 @@ import ProductHero from './ProductHero';
 import ProductPlatforms from './ProductPlatforms';
 import ProductRequirements from './ProductRequirements';
 import ProductTags from './ProductTags';
+import PromotionTimer from './PromotionTimer';
+import ProductImage from './ProductImage';
 
 interface ProductPageClientProps {
   product: IPremiumApp;
@@ -49,10 +52,26 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Promotion Timer */}
+          {product.promotion && (
+            <PromotionTimer
+              promotion={product.promotion}
+              originalPrice={product.price}
+            />
+          )}
+
+          <div className="mb-8 ">
+            <ProductImage
+              title={product.title}
+              mainImage={product.mainImage}
+              tags={product.tags}
+            />
+          </div>
+
           <ProductDescription product={product} />
 
           {/* Video Preview Section */}
-          {product.videoUrl && (
+          {product.video?.url && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -66,10 +85,17 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                   </h2>
                 </div>
                 <div className="p-4">
-                  <VideoPlayer
-                    videoUrl={product.videoUrl}
-                    title={product.title}
-                  />
+                  {product.video.type === 'youtube' ? (
+                    <VideoPlayer
+                      videoUrl={product.video.url}
+                      title={product.title}
+                    />
+                  ) : (
+                    <CustomVideoPlayer
+                      videoUrl={product.video.url}
+                      title={product.title}
+                    />
+                  )}
                 </div>
               </div>
             </motion.div>

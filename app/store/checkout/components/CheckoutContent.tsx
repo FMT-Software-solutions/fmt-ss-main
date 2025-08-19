@@ -7,8 +7,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   organizationDetailsSchema,
   OrganizationDetails,
+  DiscountCode,
+  CheckoutState,
 } from '../../types/cart';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag } from 'lucide-react';
@@ -18,10 +20,12 @@ import { toast } from 'sonner';
 import { EmailStep } from './EmailStep';
 import { OrganizationDetailsForm } from './OrganizationDetailsForm';
 import { OrderSummary } from './OrderSummary';
+import { DiscountCodeForm } from './DiscountCodeForm';
 import { BillingAddress } from '@/types/organization';
+import { isPromotionActive, getCurrentPrice } from '@/lib/utils';
 
 export default function CheckoutContent() {
-  const { items, total, clearCart } = useCartStore();
+  const { items, total, clearCart, isLoading } = useCartStore();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingOrg, setIsLoadingOrg] = useState(false);
@@ -30,6 +34,8 @@ export default function CheckoutContent() {
   const [billingAddresses, setBillingAddresses] = useState<BillingAddress[]>(
     []
   );
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   const form = useForm<OrganizationDetails>({
     resolver: zodResolver(organizationDetailsSchema),
@@ -46,6 +52,57 @@ export default function CheckoutContent() {
       },
     },
   });
+
+  // Calculate checkout state with promotion detection
+  const checkoutState: CheckoutState = useMemo(() => {
+    const hasActivePromotions = items.some(item => {
+      if (!item.product) return false;
+      return isPromotionActive(item.product);
+    });
+
+    const subtotal = items.reduce((sum, item) => {
+      if (!item.product) return sum;
+      const currentPrice = getCurrentPrice(item.product);
+      return sum + (currentPrice * item.quantity);
+    }, 0);
+
+    const finalTotal = Math.max(0, subtotal - discountAmount);
+
+    return {
+      subtotal,
+      discountAmount,
+      finalTotal,
+      appliedDiscount,
+      hasActivePromotions,
+    };
+  }, [items, discountAmount, appliedDiscount]);
+
+  const handleDiscountApplied = (discount: DiscountCode | null, amount: number) => {
+    setAppliedDiscount(discount);
+    setDiscountAmount(amount);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen py-10">
+        <div className="container max-w-4xl">
+          <div className="space-y-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-4">Checkout</h1>
+              <p className="text-muted-foreground">Loading your order details...</p>
+            </div>
+            <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
+              <div className="space-y-6">
+                <div className="h-32 bg-muted rounded animate-pulse" />
+                <div className="h-48 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="h-64 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -115,7 +172,7 @@ export default function CheckoutContent() {
       const result = await createPurchaseRecord(
         form.getValues(),
         items,
-        total,
+        checkoutState.finalTotal,
         reference.reference,
         isExistingOrg
       );
@@ -187,9 +244,19 @@ export default function CheckoutContent() {
         />
 
         <div className="space-y-4">
+          <DiscountCodeForm
+            checkoutState={checkoutState}
+            onDiscountApplied={handleDiscountApplied}
+            disabled={isProcessing}
+            cartItems={items.map(item => item.product).filter(Boolean)}
+          />
+          
           <OrderSummary
             items={items}
-            total={total}
+            total={checkoutState.finalTotal}
+            subtotal={checkoutState.subtotal}
+            discountAmount={checkoutState.discountAmount}
+            appliedDiscount={checkoutState.appliedDiscount}
             email={form.getValues('organizationEmail')}
             metadata={{
               name: form.getValues('organizationName'),
