@@ -9,53 +9,118 @@ import {
   OrganizationDetails,
   DiscountCode,
   CheckoutState,
+  CheckoutFormData,
+  checkoutFormSchema,
 } from '../../types/cart';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag } from 'lucide-react';
 import { createPurchaseRecord } from '../../services/purchases';
-import { getOrganizationByEmail } from '../../services/organizations';
+import {
+  getOrganizationForCheckout,
+  SecureOrganizationLookup,
+} from '../../services/organizations';
 import { toast } from 'sonner';
-import { EmailStep } from './EmailStep';
+import { OrganizationSearch } from './OrganizationSearch';
 import { OrganizationDetailsForm } from './OrganizationDetailsForm';
+import { BillingAddressForm } from './BillingAddressForm';
 import { OrderSummary } from './OrderSummary';
 import { DiscountCodeForm } from './DiscountCodeForm';
 import { BillingAddress } from '@/types/organization';
 import { isPromotionActive, getCurrentPrice } from '@/lib/utils';
+import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
+import { client } from '@/sanity/lib/client';
+import { issuesClient } from '@/services/issues/client';
 
 export default function CheckoutContent() {
-  const { items, total, clearCart, isLoading } = useCartStore();
+  const { items, total, clearCart, isLoading, loadCartItems } = useCartStore();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingOrg, setIsLoadingOrg] = useState(false);
-  const [step, setStep] = useState<'email' | 'details'>('email');
+  const [hasSearched, setHasSearched] = useState(false);
   const [isExistingOrg, setIsExistingOrg] = useState(false);
-  const [billingAddresses, setBillingAddresses] = useState<BillingAddress[]>(
-    []
+  const [organizationEmail, setOrganizationEmail] = useState('');
+  const [billingAddresses, setBillingAddresses] = useState<
+    Pick<
+      BillingAddress,
+      | 'id'
+      | 'street'
+      | 'city'
+      | 'state'
+      | 'country'
+      | 'postalCode'
+      | 'isDefault'
+    >[]
+  >([]);
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(
+    null
   );
-  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  const form = useForm<OrganizationDetails>({
-    resolver: zodResolver(organizationDetailsSchema),
+  const form = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
-      organizationName: '',
-      organizationEmail: '',
-      phoneNumber: '',
-      address: {
-        street: '',
-        city: '',
-        state: '',
-        country: '',
-        postalCode: '',
+      billingDetails: {
+        organizationName: '',
+        organizationEmail: '',
+        phoneNumber: '',
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          country: '',
+          postalCode: '',
+        },
       },
+      appProvisioningDetails: {},
+      useSameDetailsForAll: false,
     },
   });
 
+  // Load cart items on component mount
+  useEffect(() => {
+    loadCartItems();
+  }, [loadCartItems]);
+
+  // Watch for changes in useSameEmailAsAdmin checkbox and auto-populate userEmail
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name && name.includes('useSameEmailAsAdmin')) {
+        const productId = name.split('.')[1];
+        const isChecked =
+          value.appProvisioningDetails?.[productId]?.useSameEmailAsAdmin;
+
+        if (isChecked) {
+          form.setValue(
+            `appProvisioningDetails.${productId}.userEmail`,
+            organizationEmail
+          );
+        } else {
+          form.setValue(`appProvisioningDetails.${productId}.userEmail`, '');
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, organizationEmail]);
+
   // Calculate checkout state with promotion detection
   const checkoutState: CheckoutState = useMemo(() => {
-    const hasActivePromotions = items.some(item => {
+    // Only calculate if all items have product data loaded
+    const allItemsLoaded = items.every((item) => item.product);
+
+    if (!allItemsLoaded) {
+      return {
+        subtotal: 0,
+        discountAmount: 0,
+        finalTotal: 0,
+        appliedDiscount: null,
+        hasActivePromotions: false,
+      };
+    }
+
+    const hasActivePromotions = items.some((item) => {
       if (!item.product) return false;
       return isPromotionActive(item.product);
     });
@@ -63,7 +128,7 @@ export default function CheckoutContent() {
     const subtotal = items.reduce((sum, item) => {
       if (!item.product) return sum;
       const currentPrice = getCurrentPrice(item.product);
-      return sum + (currentPrice * item.quantity);
+      return sum + currentPrice * item.quantity;
     }, 0);
 
     const finalTotal = Math.max(0, subtotal - discountAmount);
@@ -77,19 +142,28 @@ export default function CheckoutContent() {
     };
   }, [items, discountAmount, appliedDiscount]);
 
-  const handleDiscountApplied = (discount: DiscountCode | null, amount: number) => {
+  const handleDiscountApplied = (
+    discount: DiscountCode | null,
+    amount: number
+  ) => {
     setAppliedDiscount(discount);
     setDiscountAmount(amount);
   };
 
-  if (isLoading) {
+  // Check if cart items are still loading or don't have product data
+  const isCartLoading =
+    isLoading || (items.length > 0 && !items.every((item) => item.product));
+
+  if (isCartLoading) {
     return (
       <div className="min-h-screen py-10">
         <div className="container max-w-4xl">
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold mb-4">Checkout</h1>
-              <p className="text-muted-foreground">Loading your order details...</p>
+              <p className="text-muted-foreground">
+                Loading your order details...
+              </p>
             </div>
             <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
               <div className="space-y-6">
@@ -111,87 +185,199 @@ export default function CheckoutContent() {
         title="Your cart is empty"
         description="Add some premium apps to your cart to get started."
       >
-        <Button onClick={() => router.push('/store')}>
-          Browse Premium Apps
-        </Button>
+        <Button onClick={() => router.push('/store')}>Browse Apps</Button>
       </EmptyState>
     );
   }
 
-  const lookupOrganization = async (email: string) => {
+  const handleOrganizationFound = async (
+    hasExistingOrg: boolean,
+    email: string
+  ) => {
     try {
       setIsLoadingOrg(true);
-      const org = await getOrganizationByEmail(email);
+      setOrganizationEmail(email);
+      setIsExistingOrg(hasExistingOrg);
 
-      if (org) {
-        setIsExistingOrg(true);
-        setBillingAddresses(org.billingAddresses);
+      if (hasExistingOrg) {
+        const org = await getOrganizationForCheckout(email);
+        if (org) {
+          setBillingAddresses(org.billingAddresses);
 
-        // Pre-fill form with organization details
-        form.reset({
-          organizationName: org.name,
-          organizationEmail: org.email,
-          phoneNumber: org.phone || '',
-          address: org.billingAddresses[0]
-            ? {
-                street: org.billingAddresses[0].street,
-                city: org.billingAddresses[0].city,
-                state: org.billingAddresses[0].state,
-                country: org.billingAddresses[0].country,
-                postalCode: org.billingAddresses[0].postalCode || '',
-              }
-            : {
-                street: '',
-                city: '',
-                state: '',
-                country: '',
-                postalCode: '',
-              },
-        });
-        toast.success('Organization details loaded successfully');
+          // Pre-fill billing details only (not exposing sensitive info)
+          form.setValue('billingDetails', {
+            organizationName: org.name,
+            organizationEmail: org.email,
+            phoneNumber: org.phone || '',
+            address: org.billingAddresses[0]
+              ? {
+                  street: org.billingAddresses[0].street,
+                  city: org.billingAddresses[0].city,
+                  state: org.billingAddresses[0].state,
+                  country: org.billingAddresses[0].country,
+                  postalCode: org.billingAddresses[0].postalCode || '',
+                }
+              : {
+                  street: '',
+                  city: '',
+                  state: '',
+                  country: '',
+                  postalCode: '',
+                },
+          });
+        } else {
+          // Log when organization lookup fails
+          await issuesClient.logCheckoutError(
+            'Organization not found after successful search',
+            'CheckoutContent',
+            `Looking up organization details for email: ${email}`,
+            { email, hasExistingOrg }
+          );
+        }
       } else {
-        setIsExistingOrg(false);
         setBillingAddresses([]);
-        // If no organization found, just set the email
-        form.setValue('organizationEmail', email);
+        // Set the email for new organizations
+        form.setValue('billingDetails.organizationEmail', email);
       }
 
-      setStep('details');
+      // Initialize app provisioning details for each cart item
+      const appProvisioningDetails: Record<string, any> = {};
+      items.forEach((item) => {
+        appProvisioningDetails[item.productId] = {
+          userEmail: '',
+          useSameEmailAsAdmin: false,
+        };
+      });
+      form.setValue('appProvisioningDetails', appProvisioningDetails);
+
+      setHasSearched(true);
     } catch (error) {
-      console.error('Error looking up organization:', error);
-      toast.error('Failed to lookup organization details');
+      // Log organization lookup error
+      await issuesClient.logCheckoutError(
+        error instanceof Error ? error : 'Unknown error during organization lookup',
+        'CheckoutContent',
+        `Processing organization details for email: ${email}`,
+        { email, hasExistingOrg, error: error instanceof Error ? error.message : String(error) }
+      );
+      toast.error('Failed to process organization details');
     } finally {
       setIsLoadingOrg(false);
     }
   };
 
   const handlePaymentSuccess = async (reference: any) => {
+    const formData = form.getValues();
+    
     try {
       setIsProcessing(true);
 
+      // Create purchase record with billing details
       const result = await createPurchaseRecord(
-        form.getValues(),
+        formData.billingDetails,
         items,
         checkoutState.finalTotal,
         reference.reference,
         isExistingOrg
       );
 
-      // Show appropriate success message
-      if (!isExistingOrg) {
-        toast.success(
-          'Purchase successful! We have created an account for you. Please check your email for login details.',
-          { duration: 6000 }
-        );
-      } else {
-        toast.success('Purchase successful! Thank you for your order.', {
-          duration: 4000,
-        });
+      // Call app provisioning API for each app
+
+      if (
+        result?.status === 'completed' &&
+        formData.appProvisioningDetails &&
+        Object.keys(formData.appProvisioningDetails).length > 0
+      ) {
+        try {
+          const productIds = items.map((item) => item.productId);
+          const appsWithProvisionDetails = await client.fetch(
+            appsProvisioningDetailsByIdsQuery,
+            { ids: productIds }
+          );
+
+          const provisioningDetails = appsWithProvisionDetails.reduce(
+            (acc: Record<string, any>, app: Record<string, any>) => {
+              acc[app._id] = formData.appProvisioningDetails[app._id] = {
+                id: app._id,
+                name: app.title,
+                ...formData.appProvisioningDetails[app._id],
+                ...app.appProvisioning,
+                platforms: app.platforms || {},
+                webAppUrl: app.webAppUrl || '',
+              };
+              return acc;
+            },
+            {}
+          );
+
+          const provisioningResponse = await fetch('/api/app-provisioning', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              organizationId: result?.organization_id,
+              billingDetails: formData.billingDetails,
+              appProvisioningDetails: provisioningDetails,
+            }),
+          });
+
+          const provisioningResult = await provisioningResponse.json();
+
+          if (!provisioningResult.success) {
+            console.error(
+              'App provisioning errors:',
+              provisioningResult.errors
+            );
+            // Still show success for purchase, but note provisioning issues
+            toast.warning(
+              `Purchase successful, but some apps may need manual setup. Support will contact you shortly.`,
+              { duration: 8000 }
+            );
+          }
+        } catch (provisioningError) {
+          // Log app provisioning error
+          await issuesClient.logCheckoutError(
+            provisioningError instanceof Error ? provisioningError : 'Unknown error during app provisioning',
+            'CheckoutContent',
+            'Processing app provisioning after successful payment',
+            {
+              organizationId: result?.organization_id,
+              organizationEmail: formData.billingDetails.organizationEmail,
+              itemCount: items.length,
+              error: provisioningError instanceof Error ? provisioningError.message : String(provisioningError)
+            }
+          );
+          console.error('App provisioning failed:', provisioningError);
+          toast.warning(
+            `Purchase successful, but app setup encountered issues. Support will contact you shortly.`,
+            { duration: 8000 }
+          );
+        }
       }
+
+      // Show appropriate success message
+      toast.success(
+        'Purchase successful! Details will be sent to your email.',
+        {
+          duration: 4000,
+        }
+      );
 
       clearCart();
       router.push('/store/checkout/success');
     } catch (error) {
+      // Log payment processing error
+      await issuesClient.logCheckoutError(
+        error instanceof Error ? error : 'Unknown error during payment processing',
+        'CheckoutContent',
+        'Processing payment success callback',
+        {
+          organizationEmail: formData.billingDetails.organizationEmail,
+          itemCount: items.length,
+          finalTotal: checkoutState.finalTotal,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      );
       console.error('Error processing payment:', error);
       toast.error(
         'There was an error processing your payment. Please contact support.'
@@ -204,72 +390,70 @@ export default function CheckoutContent() {
     setIsProcessing(false);
   };
 
-  if (step === 'email') {
-    return (
-      <EmailStep
-        defaultEmail={form.getValues('organizationEmail')}
-        isLoadingOrg={isLoadingOrg}
-        onSubmit={lookupOrganization}
-      />
-    );
-  }
-
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-4">Checkout</h1>
         <p className="text-muted-foreground">
-          {isExistingOrg
-            ? 'Review your organization details and complete your purchase.'
-            : 'Complete your purchase by providing your organization details.'}
+          {hasSearched
+            ? isExistingOrg
+              ? 'Review your details to complete your purchase.'
+              : 'Complete your purchase by providing account and billing details.'
+            : 'Enter organization/business email address.'}
         </p>
-        {isExistingOrg ? (
-          <p className="text-sm text-muted-foreground mt-2">
-            Organization details can be updated from your dashboard after
-            purchase.
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground mt-2">
-            We'll create an account for you with these details. Login
-            credentials will be sent to your email.
-          </p>
-        )}
       </div>
 
-      <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
-        <OrganizationDetailsForm
-          form={form}
-          isExistingOrg={isExistingOrg}
-          billingAddresses={billingAddresses}
+      {!hasSearched ? (
+        <OrganizationSearch
+          onOrganizationFound={handleOrganizationFound}
+          defaultEmail={organizationEmail}
         />
+      ) : (
+        <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
+            <OrganizationDetailsForm
+              form={form}
+              fieldPrefix="billingDetails"
+              isExistingOrg={isExistingOrg}
+              cartItems={items}
+            />
 
-        <div className="space-y-4">
-          <DiscountCodeForm
-            checkoutState={checkoutState}
-            onDiscountApplied={handleDiscountApplied}
-            disabled={isProcessing}
-            cartItems={items.map(item => item.product).filter(Boolean)}
-          />
-          
-          <OrderSummary
-            items={items}
-            total={checkoutState.finalTotal}
-            subtotal={checkoutState.subtotal}
-            discountAmount={checkoutState.discountAmount}
-            appliedDiscount={checkoutState.appliedDiscount}
-            email={form.getValues('organizationEmail')}
-            metadata={{
-              name: form.getValues('organizationName'),
-              phone: form.getValues('phoneNumber') || '',
-              custom_fields: [],
-            }}
-            isProcessing={isProcessing}
-            isValid={form.formState.isValid}
-            onSuccess={handlePaymentSuccess}
-            onClose={handlePaymentClose}
-          />
+            <BillingAddressForm
+              form={form}
+              fieldPrefix="billingDetails"
+              isExistingOrg={isExistingOrg}
+              billingAddresses={billingAddresses}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <DiscountCodeForm
+              checkoutState={checkoutState}
+              onDiscountApplied={handleDiscountApplied}
+              disabled={isProcessing}
+              cartItems={items.map((item) => item.product).filter(Boolean)}
+            />
+
+            <OrderSummary
+              items={items}
+              total={checkoutState.finalTotal}
+              subtotal={checkoutState.subtotal}
+              discountAmount={checkoutState.discountAmount}
+              appliedDiscount={checkoutState.appliedDiscount}
+              email={organizationEmail}
+              metadata={{
+                name: form.getValues('billingDetails.organizationName'),
+                phone: form.getValues('billingDetails.phoneNumber') || '',
+                custom_fields: [],
+              }}
+              isProcessing={isProcessing}
+              isValid={form.formState.isValid}
+              onSuccess={handlePaymentSuccess}
+              onClose={handlePaymentClose}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

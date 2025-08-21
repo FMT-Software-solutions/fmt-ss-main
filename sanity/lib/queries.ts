@@ -105,12 +105,36 @@ export const allPremiumAppsQuery = groq`
       isActive
     },
     features,
+    platforms {
+      desktop {
+        windows {
+          available
+        },
+        macos {
+          available
+        },
+        linux {
+          available
+        }
+      },
+      mobile {
+        android {
+          available
+        },
+        ios {
+          available
+        }
+      },
+      web {
+        available
+      }
+    },
     tags,
     publishedAt
   }
 `;
 
-// Query to get a single premium app by slug (published only)
+// Query to get a single premium app by slug (published only) - PUBLIC VERSION (no download URLs)
 export const premiumAppBySlugQuery = groq`
   *[_type == "premiumApp" && slug.current == $slug && isPublished == true][0] {
     _id,
@@ -128,13 +152,54 @@ export const premiumAppBySlugQuery = groq`
     promotion,
     features,
     systemRequirements,
-    platforms[]->{
-      name,
-      slug,
-      icon
+    platforms {
+      desktop {
+        windows {
+          available
+        },
+        macos {
+          available
+        },
+        linux {
+          available
+        }
+      },
+      mobile {
+        android {
+          available
+        },
+        ios {
+          available
+        }
+      },
+      web {
+        available
+      }
     },
-    downloadUrl,
-    webAppUrl,
+    tags,
+    publishedAt
+  }
+`;
+
+// Query to get a single premium app with download URLs (for admin/post-purchase use)
+export const premiumAppWithDownloadUrlsQuery = groq`
+  *[_type == "premiumApp" && slug.current == $slug && isPublished == true][0] {
+    _id,
+    title,
+    slug,
+    isPublished,
+    mainImage,
+    screenshots,
+    video,
+    videoUrl,
+    description,
+    shortDescription,
+    "sectors": sectors[]->name,
+    price,
+    promotion,
+    features,
+    systemRequirements,
+    platforms,
     tags,
     publishedAt
   }
@@ -409,6 +474,30 @@ export const cartItemsByIdsQuery = groq`
       isActive
     },
     features,
+    platforms {
+      desktop {
+        windows {
+          available
+        },
+        macos {
+          available
+        },
+        linux {
+          available
+        }
+      },
+      mobile {
+        android {
+          available
+        },
+        ios {
+          available
+        }
+      },
+      web {
+        available
+      }
+    },
     tags,
     publishedAt
   }
@@ -419,5 +508,107 @@ export const validateCartItemsQuery = groq`
   *[_type == "premiumApp" && _id in $ids] {
     _id,
     isPublished
+  }
+`;
+
+// Query to get premium apps with provisioning data for checkout/admin
+export const premiumAppsWithProvisioningQuery = groq`
+  *[_type == "premiumApp" && _id in $ids && isPublished == true] {
+    _id,
+    title,
+    slug,
+    isPublished,
+    mainImage,
+    shortDescription,
+    "sectors": sectors[]->name,
+    price,
+    promotion {
+      hasPromotion,
+      discountPrice,
+      startDate,
+      endDate,
+      isActive
+    },
+    features,
+    platforms,
+    appProvisioning {
+      supabaseUrl,
+      supabaseAnonKey,
+      edgeFunctionName
+    },
+    tags,
+    publishedAt
+  }
+`;
+
+// Query to get single premium app with provisioning data
+export const premiumAppWithProvisioningBySlugQuery = groq`
+  *[_type == "premiumApp" && slug.current == $slug && isPublished == true][0] {
+    _id,
+    title,
+    slug,
+    isPublished,
+    mainImage,
+    screenshots,
+    video,
+    videoUrl,
+    description,
+    shortDescription,
+    "sectors": sectors[]->name,
+    price,
+    promotion,
+    features,
+    systemRequirements,
+    platforms,
+    appProvisioning {
+      supabaseUrl,
+      supabaseAnonKey,
+      edgeFunctionName
+    },
+    tags,
+    publishedAt
+  }
+`;
+
+export const appsProvisioningDetailsByIdsQuery = groq`
+  *[_type == "premiumApp" && _id in $ids && isPublished == true] {
+    _id,
+    title,
+    platforms {
+      desktop {
+        windows {
+          available,
+          downloadUrl
+        },
+        macos {
+          available,
+          downloadUrl
+        },
+        linux {
+          available,
+          downloadUrl
+        }
+      },
+      mobile {
+        android {
+          available,
+          playStoreUrl,
+          apkUrl
+        },
+        ios {
+          available,
+          appStoreUrl
+        }
+      },
+      web {
+        available,
+        webAppUrl
+      }
+    },
+    appProvisioning {
+      supabaseUrl,
+      supabaseAnonKey,
+      edgeFunctionName
+    },
   }
 `;

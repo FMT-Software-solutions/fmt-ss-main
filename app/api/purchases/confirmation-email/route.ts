@@ -11,14 +11,13 @@ export async function POST(request: Request) {
     // Send confirmation email with purchase details
     try {
       await resend.emails.send({
-        from: 'FMT Software Solutions <noreply@fmtsoftware.com>',
+        from: 'FMT Software Solutions <purchase@fmtsoftware.com>',
         to: organizationDetails.organizationEmail,
         subject: 'Purchase Confirmation - FMT Software Solutions',
         react: PurchaseConfirmationEmail({
           organizationDetails,
           items,
           total,
-          // No temporary password for existing organizations
         }),
       });
 

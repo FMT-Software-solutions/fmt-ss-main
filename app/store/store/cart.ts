@@ -11,7 +11,6 @@ interface CartStore extends Cart {
   addItem: (product: IPremiumApp) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
-  updateQuantity: (productId: string, quantity: number) => void;
   validateAndRefreshPrices: () => Promise<void>;
   recalculateTotal: () => void;
   loadCartItems: () => Promise<void>;
@@ -30,24 +29,18 @@ export const useCartStore = create<CartStore>()(
           (item) => item.productId === product._id
         );
 
+        // For software purchases, don't allow duplicates
         if (existingItem) {
-          set({
-            items: currentItems.map((item) =>
-              item.productId === product._id
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            ),
-            total: get().total + getCurrentPrice(product),
-          });
-        } else {
-          set({
-            items: [
-              ...currentItems,
-              { productId: product._id, quantity: 1, product },
-            ],
-            total: get().total + getCurrentPrice(product),
-          });
+          return; // Item already in cart, do nothing
         }
+
+        set({
+          items: [
+            ...currentItems,
+            { productId: product._id, quantity: 1, product },
+          ],
+          total: get().total + getCurrentPrice(product),
+        });
       },
       removeItem: (productId: string) => {
         const currentItems = get().items;
@@ -58,34 +51,18 @@ export const useCartStore = create<CartStore>()(
         if (itemToRemove) {
           set({
             items: currentItems.filter((item) => item.productId !== productId),
-            total:
-              get().total - getCurrentPrice(itemToRemove.product) * itemToRemove.quantity,
+            total: get().total - getCurrentPrice(itemToRemove.product),
           });
         }
       },
       clearCart: () => {
         set({ items: [], total: 0 });
       },
-      updateQuantity: (productId: string, quantity: number) => {
-        const currentItems = get().items;
-        const itemToUpdate = currentItems.find(
-          (item) => item.productId === productId
-        );
 
-        if (itemToUpdate) {
-          const quantityDiff = quantity - itemToUpdate.quantity;
-          set({
-            items: currentItems.map((item) =>
-              item.productId === productId ? { ...item, quantity } : item
-            ),
-            total: get().total + getCurrentPrice(itemToUpdate.product) * quantityDiff,
-          });
-        }
-      },
       recalculateTotal: () => {
         const currentItems = get().items;
         const newTotal = currentItems.reduce(
-          (sum, item) => sum + getCurrentPrice(item.product) * item.quantity,
+          (sum, item) => sum + getCurrentPrice(item.product),
           0
         );
         set({ total: newTotal });
@@ -103,13 +80,17 @@ export const useCartStore = create<CartStore>()(
           const updatedItems = currentItems
             .map(item => {
               const product = products.find((p: IPremiumApp) => p._id === item.productId);
-              return product ? { ...item, product } : null;
+              return product ? { 
+                ...item, 
+                product,
+                quantity: item.quantity || 1 // Ensure quantity is always set
+              } : null;
             })
             .filter(Boolean) as CartItem[];
 
           // Recalculate total with current prices
           const newTotal = updatedItems.reduce(
-            (sum, item) => sum + getCurrentPrice(item.product) * item.quantity,
+            (sum, item) => sum + getCurrentPrice(item.product),
             0
           );
 
@@ -137,7 +118,7 @@ export const useCartStore = create<CartStore>()(
           if (invalidIds.length > 0) {
             const validItems = currentItems.filter(item => !invalidIds.includes(item.productId));
             const newTotal = validItems.reduce(
-              (sum, item) => sum + getCurrentPrice(item.product) * item.quantity,
+              (sum, item) => sum + getCurrentPrice(item.product),
               0
             );
             set({ items: validItems, total: newTotal });
@@ -157,12 +138,21 @@ export const useCartStore = create<CartStore>()(
       name: 'cart-storage',
       partialize: (state) => ({
         items: state.items.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity
+          productId: item.productId
         }))
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Ensure all items have quantity set to 1 after rehydration
+          const itemsWithQuantity = state.items.map(item => ({
+            ...item,
+            quantity: 1, // Default quantity for software purchases
+            product: null as any // Will be loaded by loadCartItems
+          })) as CartItem[];
+          
+          // Update state with proper quantities
+          useCartStore.setState({ items: itemsWithQuantity });
+          
           // Load cart items after rehydration
           setTimeout(() => {
             useCartStore.getState().loadCartItems();

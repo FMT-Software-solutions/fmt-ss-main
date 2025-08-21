@@ -3,16 +3,38 @@
 import { useCartStore } from '../../store/cart';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Trash2, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState';
-import { getSanityImageUrl, getCurrentPrice, isPromotionActive } from '@/lib/utils';
+import {
+  getSanityImageUrl,
+  getCurrentPrice,
+  isPromotionActive,
+} from '@/lib/utils';
 import { CartItem } from '../../types/cart';
+import { issuesClient } from '@/services/issues/client';
+import { toast } from 'sonner';
 
 export default function CartContent() {
-  const { items, total, removeItem, updateQuantity, isLoading } = useCartStore();
+  const { items, total, removeItem, isLoading } = useCartStore();
   const router = useRouter();
+
+  const handleRemoveItem = async (productId: string) => {
+    try {
+      removeItem(productId);
+    } catch (error) {
+      // Log cart remove error
+      await issuesClient.logAppError(
+        error instanceof Error ? error : 'Failed to remove item from cart',
+        'CartContent',
+        'cart_operation',
+        'medium',
+        { productId, action: 'remove_item' }
+      );
+      toast.error('Failed to remove item from cart. Please try again.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -89,88 +111,61 @@ export default function CartContent() {
                 </Card>
               );
             }
-            
+
             return (
-            <Card key={item.productId} className="p-4">
-              <div className="flex gap-4">
-                <div className="relative aspect-square h-24 w-24 overflow-hidden rounded-lg">
-                  <Image
-                    src={getSanityImageUrl(item.product.mainImage)}
-                    alt={item.product.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col justify-between">
-                  <div>
-                    <h3 className="font-semibold">{item.product.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.product.shortDescription}
-                    </p>
-                    <div className="text-sm mt-1">
-                      {isPromotionActive(item.product) ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-green-600 font-semibold">
-                            GHS {getCurrentPrice(item.product).toFixed(2)}
-                          </span>
-                          <span className="text-muted-foreground line-through">
+              <Card key={item.productId} className="p-4">
+                <div className="flex gap-4">
+                  <div className="relative aspect-square h-24 w-24 overflow-hidden rounded-lg">
+                    <Image
+                      src={getSanityImageUrl(item.product.mainImage)}
+                      alt={item.product.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold">{item.product.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {item.product.shortDescription}
+                      </p>
+                      <div className="text-sm mt-1">
+                        {isPromotionActive(item.product) ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-600 font-semibold">
+                              GHS {getCurrentPrice(item.product).toFixed(2)}
+                            </span>
+                            <span className="text-muted-foreground line-through">
+                              GHS {item.product.price.toFixed(2)}
+                            </span>
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                              SALE
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">
                             GHS {item.product.price.toFixed(2)}
                           </span>
-                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                            SALE
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          GHS {item.product.price.toFixed(2)}
-                        </span>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1}
+                        onClick={() => handleRemoveItem(item.productId)}
                       >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
-                      >
-                        <Plus className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeItem(item.productId)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">
-                    GHS {(getCurrentPrice(item.product) * item.quantity).toFixed(2)}
-                  </p>
-                  {item.quantity > 1 && (
-                    <p className="text-sm text-muted-foreground">
-                      GHS {getCurrentPrice(item.product).toFixed(2)} each
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      GHS {getCurrentPrice(item.product).toFixed(2)}
                     </p>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
             );
           })}
         </div>

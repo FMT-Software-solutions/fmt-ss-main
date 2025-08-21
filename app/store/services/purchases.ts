@@ -51,10 +51,10 @@ export async function createPurchaseRecord(
       );
     }
   } else {
-    // Get organization ID for existing org
+    // Get organization existing details for change detection
     const { data: org, error: orgError } = await supabase
       .from('organizations')
-      .select('id')
+      .select('id, name, email, phone')
       .eq('email', organizationDetails.organizationEmail)
       .single();
 
@@ -63,6 +63,33 @@ export async function createPurchaseRecord(
     }
 
     organization_id = org.id;
+
+    // update organization details if edited
+    const updates: any = {};
+
+    if(organizationDetails.organizationName !== org.name) {
+      updates.name = organizationDetails.organizationName;
+    }
+
+    if(organizationDetails.phoneNumber !== org.phone) {
+      updates.phone = organizationDetails.phoneNumber;
+    }
+
+    if(organizationDetails.organizationEmail !== org.email) {
+      updates.email = organizationDetails.organizationEmail;
+    }
+
+    if(Object.keys(updates).length > 0) {
+      const { error: updateError } = await supabase
+        .from('organizations')
+        .update(updates)
+        .eq('id', organization_id);
+
+      if(updateError) {
+        // throw new Error(`Error updating organization: ${updateError.message}`);
+        console.error('Error updating organization:', updateError);
+      }
+    }
 
     // Create new billing address if provided and different from existing ones
     const { data: existingAddresses } = await supabase
@@ -93,9 +120,10 @@ export async function createPurchaseRecord(
         });
 
       if (addressError) {
-        throw new Error(
-          `Error creating billing address: ${addressError.message}`
-        );
+        // throw new Error(
+        //   `Error creating billing address: ${addressError.message}`
+        // );
+        console.error('Error creating billing address:', addressError);
       }
     }
   }
@@ -116,53 +144,6 @@ export async function createPurchaseRecord(
 
   if (purchaseError) {
     throw new Error(`Error creating purchase record: ${purchaseError.message}`);
-  }
-
-  // For new organizations: Create user account and send email with purchase details and login credentials
-  if (!isExistingOrg) {
-    try {
-      // Call our Edge Function using supabase.functions.invoke
-      const { data: functionData, error: functionError } =
-        await supabase.functions.invoke('create-purchase-user', {
-          body: {
-            organizationId: organization_id,
-            organizationDetails,
-            items,
-            total,
-          },
-        });
-
-      if (functionError) {
-        console.error('Error creating user account:', functionError);
-        // We don't throw here to avoid disrupting the purchase flow
-        // The purchase is completed, even if user creation fails
-      }
-    } catch (error) {
-      console.error('Error calling create-purchase-user function:', error);
-      // We don't throw here to avoid disrupting the purchase flow
-    }
-  } else {
-    // For existing organizations: Send a purchase confirmation email without credentials using API route
-    try {
-      const response = await fetch('/api/purchases/confirmation-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationDetails,
-          items,
-          total,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error sending purchase confirmation email:', errorData);
-      }
-    } catch (error) {
-      console.error('Error calling purchase confirmation email API:', error);
-    }
   }
 
   return {

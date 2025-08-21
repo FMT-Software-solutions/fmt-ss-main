@@ -6,6 +6,9 @@ import { PriceDisplay } from '@/components/PriceDisplay';
 import { getCurrentPrice } from '@/lib/utils';
 import { IPremiumApp } from '@/types/premium-app';
 import { CreditCard, ShoppingCart } from 'lucide-react';
+import { issuesClient } from '@/services/issues/client';
+import { toast } from 'sonner';
+import { useCartStore } from '../../store/cart';
 
 interface ProductCTAProps {
   product: IPremiumApp;
@@ -19,6 +22,29 @@ export default function ProductCTA({
   onAddToCart,
 }: ProductCTAProps) {
   const currentPrice = getCurrentPrice(product);
+  const { addItem } = useCartStore();
+
+  const handleAddToCart = async () => {
+    try {
+      addItem(product);
+      toast.success(`${product.title} added to cart!`);
+    } catch (error) {
+      // Log add to cart error
+      await issuesClient.logAppError(
+        error instanceof Error ? error : 'Failed to add product to cart',
+        'ProductCTA',
+        'cart_operation',
+        'medium',
+        {
+          productId: product._id,
+          productName: product.title,
+          price: currentPrice,
+          action: 'add_to_cart'
+        }
+      );
+      toast.error('Failed to add item to cart. Please try again.');
+    }
+  };
 
   return (
     <Card className="bg-muted mt-8 mb-4 shadow-md">

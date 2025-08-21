@@ -69,9 +69,6 @@ export function OrderSummary({
             <div key={item.productId} className="flex justify-between">
               <div>
                 <p className="font-medium">{item.product.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  Qty: {item.quantity}
-                </p>
               </div>
               <div className="text-right">
                 <p className="font-medium">GHS {itemTotal.toFixed(2)}</p>

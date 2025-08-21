@@ -176,21 +176,144 @@ export default defineType({
     defineField({
       name: 'platforms',
       title: 'Available Platforms',
-      type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'platform' }] }],
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'downloadUrl',
-      title: 'Download URL',
-      type: 'url',
-      description: 'URL for downloading the app (if applicable)',
-    }),
-    defineField({
-      name: 'webAppUrl',
-      title: 'Web App URL',
-      type: 'url',
-      description: 'URL for the web version of the app (if applicable)',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'desktop',
+          title: 'Desktop Platforms',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'windows',
+              title: 'Windows',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'available',
+                  title: 'Available on Windows',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'downloadUrl',
+                  title: 'Windows Download URL',
+                  type: 'url',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+              ],
+            }),
+            defineField({
+              name: 'macos',
+              title: 'macOS',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'available',
+                  title: 'Available on macOS',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'downloadUrl',
+                  title: 'macOS Download URL',
+                  type: 'url',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+              ],
+            }),
+            defineField({
+              name: 'linux',
+              title: 'Linux',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'available',
+                  title: 'Available on Linux',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'downloadUrl',
+                  title: 'Linux Download URL',
+                  type: 'url',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+              ],
+            }),
+          ],
+        }),
+        defineField({
+          name: 'mobile',
+          title: 'Mobile Platforms',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'android',
+              title: 'Android',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'available',
+                  title: 'Available on Android',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'playStoreUrl',
+                  title: 'Google Play Store URL',
+                  type: 'url',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+                defineField({
+                  name: 'apkUrl',
+                  title: 'Direct APK Download URL',
+                  type: 'url',
+                  description: 'Optional direct APK download link',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+              ],
+            }),
+            defineField({
+              name: 'ios',
+              title: 'iOS',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'available',
+                  title: 'Available on iOS',
+                  type: 'boolean',
+                  initialValue: false,
+                }),
+                defineField({
+                  name: 'appStoreUrl',
+                  title: 'App Store URL',
+                  type: 'url',
+                  hidden: ({ parent }) => !parent?.available,
+                }),
+              ],
+            }),
+          ],
+        }),
+        defineField({
+          name: 'web',
+          title: 'Web Platform',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'available',
+              title: 'Available as Web App',
+              type: 'boolean',
+              initialValue: false,
+            }),
+            defineField({
+              name: 'webAppUrl',
+              title: 'Web App URL',
+              type: 'url',
+              hidden: ({ parent }) => !parent?.available,
+            }),
+          ],
+        }),
+      ],
     }),
     defineField({
       name: 'tags',
@@ -205,6 +328,36 @@ export default defineType({
       name: 'publishedAt',
       title: 'Published At',
       type: 'datetime',
+    }),
+    defineField({
+      name: 'appProvisioning',
+      title: 'App Provisioning Configuration',
+      type: 'object',
+      description: 'Configuration for user/organization provisioning after purchase',
+      fields: [
+        defineField({
+          name: 'supabaseUrl',
+          title: 'Supabase Project URL',
+          type: 'url',
+          description: 'The Supabase project URL for this app',
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: 'supabaseAnonKey',
+          title: 'Supabase Anonymous Key',
+          type: 'string',
+          description: 'The public anonymous key for this Supabase project',
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: 'edgeFunctionName',
+          title: 'Edge Function Name',
+          type: 'string',
+          description: 'Name of the edge function to call for provisioning (e.g., "create-owner")',
+          initialValue: 'create-owner',
+          validation: (Rule) => Rule.required(),
+        }),
+      ],
     }),
   ],
   preview: {

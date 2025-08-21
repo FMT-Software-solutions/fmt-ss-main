@@ -35,10 +35,17 @@ export const products: IPremiumApp[] = [
       memory: '4 GB RAM minimum',
       storage: '1 GB available space',
     },
-    platforms: [
-      { name: 'Web', slug: { current: 'web' }, icon: 'globe' },
-      { name: 'Desktop', slug: { current: 'desktop' }, icon: 'monitor' },
-    ],
+    platforms: {
+      web: {
+        available: true,
+        webAppUrl: 'https://example.com/app/project-manager-pro'
+      },
+      desktop: {
+        windows: { available: true, downloadUrl: 'https://example.com/download/project-manager-pro' },
+        macos: { available: true, downloadUrl: 'https://example.com/download/project-manager-pro' },
+        linux: { available: true, downloadUrl: 'https://example.com/download/project-manager-pro' }
+      }
+    },
     downloadUrl: 'https://example.com/download/project-manager-pro',
     webAppUrl: 'https://example.com/app/project-manager-pro',
   },
@@ -76,9 +83,13 @@ export const products: IPremiumApp[] = [
       memory: '8 GB RAM minimum',
       storage: '2 GB available space',
     },
-    platforms: [
-      { name: 'Desktop', slug: { current: 'desktop' }, icon: 'monitor' },
-    ],
+    platforms: {
+      desktop: {
+        windows: { available: true, downloadUrl: 'https://example.com/download/data-analyzer' },
+        macos: { available: true, downloadUrl: 'https://example.com/download/data-analyzer' },
+        linux: { available: true, downloadUrl: 'https://example.com/download/data-analyzer' }
+      }
+    },
     downloadUrl: 'https://example.com/download/data-analyzer',
     webAppUrl: null,
   },
@@ -116,11 +127,21 @@ export const products: IPremiumApp[] = [
       memory: '4 GB RAM minimum',
       storage: '5 GB available space',
     },
-    platforms: [
-      { name: 'Web', slug: { current: 'web' }, icon: 'globe' },
-      { name: 'Desktop', slug: { current: 'desktop' }, icon: 'monitor' },
-      { name: 'Mobile', slug: { current: 'mobile' }, icon: 'smartphone' },
-    ],
+    platforms: {
+      web: {
+        available: true,
+        webAppUrl: 'https://example.com/app/secure-vault'
+      },
+      desktop: {
+        windows: { available: true, downloadUrl: 'https://example.com/download/secure-vault' },
+        macos: { available: true, downloadUrl: 'https://example.com/download/secure-vault' },
+        linux: { available: true, downloadUrl: 'https://example.com/download/secure-vault' }
+      },
+      mobile: {
+        android: { available: true, playStoreUrl: 'https://play.google.com/store/apps/details?id=com.example.securevault' },
+        ios: { available: true, appStoreUrl: 'https://apps.apple.com/app/secure-vault/id123456789' }
+      }
+    },
     downloadUrl: 'https://example.com/download/secure-vault',
     webAppUrl: 'https://example.com/app/secure-vault',
   },

@@ -25,6 +25,7 @@ import {
   Users,
   Settings,
   GraduationCap,
+  AlertTriangle,
   Search,
   Bell,
   Menu,
@@ -53,6 +54,11 @@ const navigation = [
     name: 'Releases',
     href: '/admin/releases',
     icon: Rocket,
+  },
+  {
+    name: 'Issues',
+    href: '/admin/issues',
+    icon: AlertTriangle,
   },
   {
     name: 'Metrics',

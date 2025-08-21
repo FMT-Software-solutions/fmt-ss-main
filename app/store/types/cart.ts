@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { IPremiumApp, IDiscountCode } from '@/types/premium-app';
 
-// Simple cart item with only ID and quantity for localStorage
+// Simple cart item with only ID for localStorage (quantity always 1 for software)
 export interface CartItemStorage {
   productId: string;
-  quantity: number;
 }
 
 // Full cart item with product details for display
@@ -24,6 +23,15 @@ export interface CartStorage {
   items: CartItemStorage[];
 }
 
+// App provisioning details for each purchased app
+export const appProvisioningDetailsSchema = z.object({
+  useSameEmailAsAdmin: z.boolean().default(false),
+  userEmail: z.string().email('Invalid user email address').optional(),
+});
+
+export type AppProvisioningDetails = z.infer<typeof appProvisioningDetailsSchema>;
+
+// Legacy organization details schema for billing
 export const organizationDetailsSchema = z.object({
   organizationName: z.string().min(2, 'Organization name is required'),
   organizationEmail: z.string().email('Invalid email address'),
@@ -38,6 +46,15 @@ export const organizationDetailsSchema = z.object({
 });
 
 export type OrganizationDetails = z.infer<typeof organizationDetailsSchema>;
+
+// Checkout form data combining billing and app provisioning
+export const checkoutFormSchema = z.object({
+  billingDetails: organizationDetailsSchema,
+  appProvisioningDetails: z.record(z.string(), appProvisioningDetailsSchema), // keyed by productId
+  useSameDetailsForAll: z.boolean().default(false),
+});
+
+export type CheckoutFormData = z.infer<typeof checkoutFormSchema>;
 
 // Re-export the discount code interface from the main types
 export type { IDiscountCode as DiscountCode } from '@/types/premium-app';

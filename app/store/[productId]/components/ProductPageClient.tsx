@@ -123,7 +123,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
           )}
 
           {/* Platforms Section */}
-          {product.platforms && product.platforms.length > 0 && (
+          {product.platforms && (
             <ProductPlatforms platforms={product.platforms} />
           )}
 

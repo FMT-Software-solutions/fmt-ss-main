@@ -59,6 +59,44 @@ export interface IVideo {
   url?: string;
 }
 
+export interface IPlatformAvailability {
+  desktop?: {
+    windows?: {
+      available: boolean;
+      downloadUrl?: string;
+    };
+    macos?: {
+      available: boolean;
+      downloadUrl?: string;
+    };
+    linux?: {
+      available: boolean;
+      downloadUrl?: string;
+    };
+  };
+  mobile?: {
+    android?: {
+      available: boolean;
+      playStoreUrl?: string;
+      apkUrl?: string;
+    };
+    ios?: {
+      available: boolean;
+      appStoreUrl?: string;
+    };
+  };
+  web?: {
+    available: boolean;
+    webAppUrl?: string;
+  };
+}
+
+export interface IAppProvisioning {
+  supabaseUrl: string;
+  supabaseAnonKey: string;
+  edgeFunctionName: string;
+}
+
 export interface IPremiumApp {
   _id: string;
   id?: string; // Used in local data
@@ -75,20 +113,18 @@ export interface IPremiumApp {
   sectors: string[];
   category?: string; // Used in local data
   features: string[];
-  requirements: {
+  requirements?: {
     os: string[];
     processor: string;
     memory: string;
     storage: string;
     additionalRequirements?: string[];
   };
-  platforms: {
-    name: string;
-    slug: { type?: string; current: string };
-    icon: string;
-  }[];
-  downloadUrl: string | null;
-  webAppUrl: string | null;
+  systemRequirements?: any; // For Sanity rich text content
+  platforms: IPlatformAvailability;
+  downloadUrl?: string | null; // Deprecated - kept for backward compatibility
+  webAppUrl?: string | null; // Deprecated - kept for backward compatibility
+  appProvisioning?: IAppProvisioning;
   tags: string[];
   price: number;
   promotion?: IPromotion;
@@ -105,6 +141,7 @@ export interface IPremiumAppListItem {
   shortDescription: string;
   sectors: string[];
   features: string[];
+  platforms: IPlatformAvailability;
   tags: string[];
   price: number;
   promotion?: {
