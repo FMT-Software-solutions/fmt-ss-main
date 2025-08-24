@@ -144,7 +144,6 @@ export async function POST(request: NextRequest) {
         }),
       });
 
-      // console.log('Confirmation email sent to:', validatedData.email);
     } catch (emailError) {
       console.error('Error sending confirmation email:', emailError);
       // Don't fail the registration if email fails

@@ -26,7 +26,10 @@ export interface CartStorage {
 // App provisioning details for each purchased app
 export const appProvisioningDetailsSchema = z.object({
   useSameEmailAsAdmin: z.boolean().default(false),
-  userEmail: z.string().email('Invalid user email address').optional(),
+  userEmail: z.string().optional().refine(
+    (email) => !email || z.string().email().safeParse(email).success,
+    { message: 'Invalid user email address' }
+  ),
 });
 
 export type AppProvisioningDetails = z.infer<typeof appProvisioningDetailsSchema>;

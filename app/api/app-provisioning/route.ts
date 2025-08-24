@@ -1,8 +1,9 @@
-import { createCustomClient, createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { AppProvisioningConfirmationEmail } from '@/app/store/emails/AppProvisioningConfirmation';
 import { issuesServer } from '@/services/issues/server';
+import { IPlatformAvailability } from '@/types/premium-app';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,20 +18,7 @@ interface ProvisionDetails {
   supabaseUrl: string;
   webAppUrl?: string;
   downloadUrl?: string;
-  platforms?: {
-    desktop?: {
-      windows?: string;
-      macos?: string;
-      linux?: string;
-    };
-    mobile?: {
-      android?: string;
-      ios?: string;
-    };
-    web?: {
-      url?: string;
-    };
-  };
+  platforms?: IPlatformAvailability;
 }
 
 interface AppProvisioningDetails {
@@ -82,7 +70,6 @@ async function sendProvisioningEmail(
   appName: string,
   userEmail: string,
   temporaryPassword: string,
-  webAppUrl?: string,
   platforms?: ProvisionDetails['platforms']
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -96,7 +83,6 @@ async function sendProvisioningEmail(
         appName,
         userEmail,
         temporaryPassword,
-        webAppUrl,
         platforms,
       }),
     });
@@ -293,30 +279,10 @@ export async function POST(request: Request) {
             };
           }
 
-          // Create Supabase client for this app
-          let supabase;
-          try {
-            supabase = await createCustomClient(appDetails.supabaseUrl, appDetails.supabaseAnonKey);
-          } catch (clientError) {
-            // Log database client creation error
-            await issuesServer.logDatabaseError(
-              'Failed to create custom Supabase client',
-              'app-provisioning POST',
-              'supabase_clients', // table
-              undefined, // query
-              { productId, supabaseUrl: appDetails.supabaseUrl, clientError: clientError instanceof Error ? clientError.message : 'Unknown error' }
-            );
-            return {
-              productId,
-              success: false,
-              error: `Failed to create Database client: ${clientError instanceof Error ? clientError.message : 'Unknown error'}`,
-              emailSent: false
-            };
-          }
 
           // Generate temporal password for user
           const userPassword = generateTemporalPassword();
-          const userEmail = appDetails.useSameEmailAsAdmin ? billingDetails.organizationEmail : appDetails.userEmail;
+          const userEmail = appDetails.useSameEmailAsAdmin || (!appDetails.useSameEmailAsAdmin && !appDetails.userEmail) || (!appDetails.useSameEmailAsAdmin && appDetails.userEmail?.trim() === '') ? billingDetails.organizationEmail : appDetails.userEmail;
 
           // Validate final user email
           if (!userEmail) {
@@ -345,18 +311,62 @@ export async function POST(request: Request) {
             },
             productId,
             appName: appDetails.name,
-          }; 
+            provisioningSecret: process.env.PROVISIONING_SECRET,
+          };
 
-          // Call the edge function for this app
+          // Call the edge function for this app using direct HTTP request
           let edgeFunctionResult;
           try {
-            edgeFunctionResult = await supabase.functions.invoke(
-              appDetails.edgeFunctionName,
-              {
-                body: provisioningData,
-              }
-            );
+            const response = await fetch(`${appDetails.supabaseUrl}/functions/v1/${appDetails.edgeFunctionName}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${appDetails.supabaseAnonKey}`,
+                'apikey': appDetails.supabaseAnonKey
+              },
+              body: JSON.stringify(provisioningData)
+            });
+
+            const responseText = await response.text();
+            let responseData;
+            
+            try {
+              responseData = JSON.parse(responseText);
+            } catch {
+              responseData = responseText;
+            }
+
+            if (!response.ok) {
+              console.error(`Edge function HTTP error for ${productId}:`, {
+                status: response.status,
+                statusText: response.statusText,
+                responseData
+              });
+              // Log edge function HTTP error
+              await issuesServer.logApiError(
+                'Edge function HTTP request failed',
+                'app-provisioning',
+                'POST',
+                { 
+                  productId, 
+                  edgeFunctionName: appDetails.edgeFunctionName, 
+                  httpStatus: response.status,
+                  httpStatusText: response.statusText,
+                  responseData,
+                  provisioningData 
+                }
+              );
+              return {
+                productId,
+                success: false,
+                error: `Edge function HTTP request failed: ${response.status} ${response.statusText} - ${JSON.stringify(responseData)}`,
+                emailSent: false
+              };
+            }
+
+            edgeFunctionResult = { data: responseData, error: null };
           } catch (invokeError) {
+            console.error(`Edge function invocation error for ${productId}:`, invokeError);
             // Log edge function invocation error
             await issuesServer.logApiError(
               'Edge function invocation failed',
@@ -372,23 +382,6 @@ export async function POST(request: Request) {
             };
           }
 
-          if (edgeFunctionResult.error) {
-            console.error(`Edge function error for ${productId}:`, edgeFunctionResult.error);
-            // Log edge function execution error
-            await issuesServer.logApiError(
-              'Edge function execution failed',
-              'app-provisioning',
-              'POST',
-              { productId, edgeFunctionName: appDetails.edgeFunctionName, edgeFunctionError: edgeFunctionResult.error, provisioningData }
-            );
-            return {
-              productId,
-              success: false,
-              error: `Edge function execution failed: ${edgeFunctionResult.error.message || 'Unknown edge function error'}`,
-              emailSent: false
-            };
-          }
-
           // Send confirmation email
           const emailResult = await sendProvisioningEmail(
             billingDetails.organizationName,
@@ -396,7 +389,6 @@ export async function POST(request: Request) {
             appDetails.name,
             userEmail,
             userPassword,
-            appDetails.webAppUrl,
             appDetails.platforms
           );
 

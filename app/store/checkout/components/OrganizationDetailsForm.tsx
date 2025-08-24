@@ -17,9 +17,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { CartItem } from '../../types/cart';
+import { checkDuplicatePurchases } from '../../services/purchases';
+import debounce from 'lodash.debounce';
 
 interface OrganizationDetailsFormProps {
   form: UseFormReturn<any>;
@@ -38,9 +40,61 @@ export function OrganizationDetailsForm({
 
   // Filter out items without product data
   const validCartItems = cartItems.filter((item) => item.product);
+
   const getFieldName = (name: string) => {
     return fieldPrefix ? `${fieldPrefix}.${name}` : name;
   };
+
+  // Debounced duplicate validation function
+  const validateEmailForDuplicates = useCallback(
+    debounce(async (email: string) => {
+      if (!email || !validCartItems.length) {
+        return;
+      }
+
+      try {
+        const appIds = validCartItems.map((item) => item.productId);
+        const duplicateCheck = await checkDuplicatePurchases(email, appIds);
+
+        if (duplicateCheck.hasDuplicates) {
+          const conflictingApps = duplicateCheck.conflictingApps
+            .map((app) => app.appName)
+            .join(', ');
+          const errorMessage = `This email has already purchased this app: ${conflictingApps}`;
+
+          // Set custom validation error on the email field
+          form.setError(getFieldName('organizationEmail') as any, {
+            type: 'manual',
+            message: errorMessage,
+          });
+        } else {
+          // Clear any existing error on the email field
+          form.clearErrors(getFieldName('organizationEmail') as any);
+        }
+      } catch (error) {
+        console.error('Error validating duplicates:', error);
+      }
+    }, 1000),
+    [validCartItems, form, getFieldName]
+  );
+
+  // Watch for email changes and trigger duplicate validation
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === getFieldName('organizationEmail')) {
+        const email =
+          value?.billingDetails?.organizationEmail || value?.organizationEmail;
+        if (email) {
+          validateEmailForDuplicates(email);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      validateEmailForDuplicates.cancel();
+    };
+  }, [form, validateEmailForDuplicates, getFieldName]);
 
   const renderField = (label: string, name: string) => {
     const fullFieldName = getFieldName(name);
@@ -54,7 +108,6 @@ export function OrganizationDetailsForm({
             <FormControl>
               <Input
                 {...field}
-                value={typeof field.value === 'object' ? '' : field.value || ''}
                 disabled={
                   isExistingOrg &&
                   field.name === 'billingDetails.organizationEmail'
@@ -70,7 +123,7 @@ export function OrganizationDetailsForm({
 
   const handleFirstAppDetailsChange = (
     field: string,
-    value: string | boolean
+    value: string | boolean | undefined
   ) => {
     if (useSameForAll && validCartItems.length > 0) {
       validCartItems.forEach((item) => {
@@ -132,10 +185,10 @@ export function OrganizationDetailsForm({
                       if (checked) {
                         form.setValue(
                           `appProvisioningDetails.${productId}.userEmail`,
-                          ''
+                          undefined
                         );
                         if (isFirstApp) {
-                          handleFirstAppDetailsChange('userEmail', '');
+                          handleFirstAppDetailsChange('userEmail', undefined);
                         }
                       }
                     }}

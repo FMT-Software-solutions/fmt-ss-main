@@ -1,3 +1,4 @@
+import { IPlatformAvailability } from '@/types/premium-app';
 import {
   Body,
   Container,
@@ -17,21 +18,7 @@ interface AppProvisioningConfirmationEmailProps {
   appName: string;
   userEmail: string;
   temporaryPassword: string;
-  webAppUrl?: string;
-  platforms?: {
-    desktop?: {
-      windows?: string;
-      macos?: string;
-      linux?: string;
-    };
-    mobile?: {
-      android?: string;
-      ios?: string;
-    };
-    web?: {
-      url?: string;
-    };
-  };
+  platforms?: IPlatformAvailability;
 }
 
 export const AppProvisioningConfirmationEmail = ({
@@ -40,7 +27,6 @@ export const AppProvisioningConfirmationEmail = ({
   appName,
   userEmail,
   temporaryPassword,
-  webAppUrl,
   platforms,
 }: AppProvisioningConfirmationEmailProps) => {
   const previewText = `Your ${appName} app has been successfully provisioned`;
@@ -76,69 +62,88 @@ export const AppProvisioningConfirmationEmail = ({
 
           <Section style={section}>
             <Heading style={h2}>Access Your Application</Heading>
-            {webAppUrl && (
+            {platforms?.web?.available && (
               <Text style={linkText}>
-                <Link href={webAppUrl} style={link}>
+                <Link href={platforms.web.webAppUrl} style={link}>
                   Access {appName} Web Application
                 </Link>
               </Text>
             )}
-            
-            {platforms?.web?.url && (
+
+            {platforms?.web?.available && (
               <Text style={linkText}>
-                <Link href={platforms.web.url} style={link}>
+                <Link href={platforms.web.webAppUrl} style={link}>
                   Open Web App
                 </Link>
               </Text>
             )}
-            
+
             {/* Desktop Downloads */}
-            {(platforms?.desktop?.windows || platforms?.desktop?.macos || platforms?.desktop?.linux) && (
+            {(platforms?.desktop?.windows?.available ||
+              platforms?.desktop?.macos?.available ||
+              platforms?.desktop?.linux?.available) && (
               <div>
-                <Text style={text}><strong>Desktop Downloads:</strong></Text>
-                
-                {platforms?.desktop?.windows && (
+                <Text style={text}>
+                  <strong>Desktop Downloads:</strong>
+                </Text>
+
+                {platforms?.desktop?.windows?.available && (
                   <Text style={linkText}>
-                    <Link href={platforms.desktop.windows} style={link}>
+                    <Link
+                      href={platforms.desktop.windows.downloadUrl}
+                      style={link}
+                    >
                       Download for Windows
                     </Link>
                   </Text>
                 )}
-                
-                {platforms?.desktop?.macos && (
+
+                {platforms?.desktop?.macos?.available && (
                   <Text style={linkText}>
-                    <Link href={platforms.desktop.macos} style={link}>
+                    <Link
+                      href={platforms.desktop.macos.downloadUrl}
+                      style={link}
+                    >
                       Download for macOS
                     </Link>
                   </Text>
                 )}
-                
-                {platforms?.desktop?.linux && (
+
+                {platforms?.desktop?.linux?.available && (
                   <Text style={linkText}>
-                    <Link href={platforms.desktop.linux} style={link}>
+                    <Link
+                      href={platforms.desktop.linux.downloadUrl}
+                      style={link}
+                    >
                       Download for Linux
                     </Link>
                   </Text>
                 )}
               </div>
             )}
-            
+
             {/* Mobile Downloads */}
-            {(platforms?.mobile?.android || platforms?.mobile?.ios) && (
+            {(platforms?.mobile?.android?.available ||
+              platforms?.mobile?.ios?.available) && (
               <div>
-                <Text style={text}><strong>Mobile Downloads:</strong></Text>
-                
-                {platforms?.mobile?.android && (
+                <Text style={text}>
+                  <strong>Mobile Downloads:</strong>
+                </Text>
+
+                {platforms?.mobile?.android?.available && (
                   <Text style={linkText}>
-                    <Link href={platforms.mobile.android} style={link}>
+                    <Link
+                      href={platforms.mobile.android.playStoreUrl}
+                      style={link}
+                    >
                       Download for Android
                     </Link>
                   </Text>
                 )}
-                
-                {platforms?.mobile?.ios && (
+
+                {platforms?.mobile?.ios?.available && (
                   <Text style={linkText}>
-                    <Link href={platforms.mobile.ios} style={link}>
+                    <Link href={platforms.mobile.ios.appStoreUrl} style={link}>
                       Download for iOS
                     </Link>
                   </Text>

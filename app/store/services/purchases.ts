@@ -153,3 +153,80 @@ export async function createPurchaseRecord(
     status: 'completed',
   };
 }
+
+// Check if an organization has already purchased specific apps
+export async function checkDuplicatePurchases(
+  organizationEmail: string,
+  appIds: string[]
+): Promise<{
+  hasDuplicates: boolean;
+  duplicateApps: string[];
+  conflictingApps: Array<{ appId: string; appName?: string }>;
+}> {
+  const supabase = createClient();
+
+  try {
+    // First get the organization ID
+    const { data: org, error: orgError } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('email', organizationEmail)
+      .eq('status', 'active')
+      .single();
+
+    if (orgError || !org) {
+      // Organization doesn't exist, so no duplicates
+      return {
+        hasDuplicates: false,
+        duplicateApps: [],
+        conflictingApps: [],
+      };
+    }
+
+    // Get all completed purchases for this organization
+    const { data: purchases, error: purchaseError } = await supabase
+      .from('purchases')
+      .select('items')
+      .eq('organization_id', org.id)
+      .eq('status', 'completed');
+
+    if (purchaseError) {
+      throw new Error(`Error checking purchases: ${purchaseError.message}`);
+    }
+
+    if (!purchases || purchases.length === 0) {
+      return {
+        hasDuplicates: false,
+        duplicateApps: [],
+        conflictingApps: [],
+      };
+    }
+
+    // Extract all purchased app IDs from the items JSONB field
+    const purchasedAppIds = new Set<string>();
+    purchases.forEach((purchase) => {
+      if (purchase.items && Array.isArray(purchase.items)) {
+        purchase.items.forEach((item: any) => {
+          // Check both productId (new format) and appId (legacy format) for compatibility
+          const appId = item.productId || item.appId;
+          if (appId) {
+            purchasedAppIds.add(appId);
+          }
+        });
+      }
+    });
+
+    // Check for duplicates
+    const duplicateApps = appIds.filter((appId) => purchasedAppIds.has(appId));
+    const conflictingApps = duplicateApps.map((appId) => ({ appId }));
+
+    return {
+      hasDuplicates: duplicateApps.length > 0,
+      duplicateApps,
+      conflictingApps,
+    };
+  } catch (error) {
+    console.error('Error checking duplicate purchases:', error);
+    throw error;
+  }
+}

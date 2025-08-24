@@ -1,43 +1,37 @@
 'use client';
 
-import { useCartStore } from '../../store/cart';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  organizationDetailsSchema,
-  OrganizationDetails,
-  DiscountCode,
-  CheckoutState,
-  CheckoutFormData,
-  checkoutFormSchema,
-} from '../../types/cart';
-import { useState, useMemo, useEffect } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag } from 'lucide-react';
-import { createPurchaseRecord } from '../../services/purchases';
-import {
-  getOrganizationForCheckout,
-  SecureOrganizationLookup,
-} from '../../services/organizations';
-import { toast } from 'sonner';
-import { OrganizationSearch } from './OrganizationSearch';
-import { OrganizationDetailsForm } from './OrganizationDetailsForm';
-import { BillingAddressForm } from './BillingAddressForm';
-import { OrderSummary } from './OrderSummary';
-import { DiscountCodeForm } from './DiscountCodeForm';
-import { BillingAddress } from '@/types/organization';
-import { isPromotionActive, getCurrentPrice } from '@/lib/utils';
-import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
+import { getCurrentPrice, isPromotionActive } from '@/lib/utils';
 import { client } from '@/sanity/lib/client';
+import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
 import { issuesClient } from '@/services/issues/client';
+import { BillingAddress } from '@/types/organization';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ShoppingBag } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { getOrganizationForCheckout } from '../../services/organizations';
+import { createPurchaseRecord } from '../../services/purchases';
+import { useCartStore } from '../../store/cart';
+import {
+  CheckoutFormData,
+  checkoutFormSchema,
+  CheckoutState,
+  DiscountCode,
+} from '../../types/cart';
+import { BillingAddressForm } from './BillingAddressForm';
+import { DiscountCodeForm } from './DiscountCodeForm';
+import { OrderSummary } from './OrderSummary';
+import { OrganizationDetailsForm } from './OrganizationDetailsForm';
+import { OrganizationSearch } from './OrganizationSearch';
 
 export default function CheckoutContent() {
   const { items, total, clearCart, isLoading, loadCartItems } = useCartStore();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoadingOrg, setIsLoadingOrg] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [isExistingOrg, setIsExistingOrg] = useState(false);
   const [organizationEmail, setOrganizationEmail] = useState('');
@@ -60,6 +54,8 @@ export default function CheckoutContent() {
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       billingDetails: {
         organizationName: '',
@@ -97,7 +93,10 @@ export default function CheckoutContent() {
             organizationEmail
           );
         } else {
-          form.setValue(`appProvisioningDetails.${productId}.userEmail`, '');
+          form.setValue(
+            `appProvisioningDetails.${productId}.userEmail`,
+            undefined
+          );
         }
       }
     });
@@ -195,7 +194,6 @@ export default function CheckoutContent() {
     email: string
   ) => {
     try {
-      setIsLoadingOrg(true);
       setOrganizationEmail(email);
       setIsExistingOrg(hasExistingOrg);
 
@@ -244,30 +242,36 @@ export default function CheckoutContent() {
       const appProvisioningDetails: Record<string, any> = {};
       items.forEach((item) => {
         appProvisioningDetails[item.productId] = {
-          userEmail: '',
+          userEmail: undefined,
           useSameEmailAsAdmin: false,
         };
       });
       form.setValue('appProvisioningDetails', appProvisioningDetails);
 
+      // Allow form to validate naturally based on mode configuration
+
       setHasSearched(true);
     } catch (error) {
       // Log organization lookup error
       await issuesClient.logCheckoutError(
-        error instanceof Error ? error : 'Unknown error during organization lookup',
+        error instanceof Error
+          ? error
+          : 'Unknown error during organization lookup',
         'CheckoutContent',
         `Processing organization details for email: ${email}`,
-        { email, hasExistingOrg, error: error instanceof Error ? error.message : String(error) }
+        {
+          email,
+          hasExistingOrg,
+          error: error instanceof Error ? error.message : String(error),
+        }
       );
       toast.error('Failed to process organization details');
-    } finally {
-      setIsLoadingOrg(false);
     }
   };
 
   const handlePaymentSuccess = async (reference: any) => {
     const formData = form.getValues();
-    
+
     try {
       setIsProcessing(true);
 
@@ -337,14 +341,19 @@ export default function CheckoutContent() {
         } catch (provisioningError) {
           // Log app provisioning error
           await issuesClient.logCheckoutError(
-            provisioningError instanceof Error ? provisioningError : 'Unknown error during app provisioning',
+            provisioningError instanceof Error
+              ? provisioningError
+              : 'Unknown error during app provisioning',
             'CheckoutContent',
             'Processing app provisioning after successful payment',
             {
               organizationId: result?.organization_id,
               organizationEmail: formData.billingDetails.organizationEmail,
               itemCount: items.length,
-              error: provisioningError instanceof Error ? provisioningError.message : String(provisioningError)
+              error:
+                provisioningError instanceof Error
+                  ? provisioningError.message
+                  : String(provisioningError),
             }
           );
           console.error('App provisioning failed:', provisioningError);
@@ -368,14 +377,16 @@ export default function CheckoutContent() {
     } catch (error) {
       // Log payment processing error
       await issuesClient.logCheckoutError(
-        error instanceof Error ? error : 'Unknown error during payment processing',
+        error instanceof Error
+          ? error
+          : 'Unknown error during payment processing',
         'CheckoutContent',
         'Processing payment success callback',
         {
           organizationEmail: formData.billingDetails.organizationEmail,
           itemCount: items.length,
           finalTotal: checkoutState.finalTotal,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         }
       );
       console.error('Error processing payment:', error);
@@ -407,6 +418,7 @@ export default function CheckoutContent() {
         <OrganizationSearch
           onOrganizationFound={handleOrganizationFound}
           defaultEmail={organizationEmail}
+          cartItems={items}
         />
       ) : (
         <div className="grid gap-8 md:grid-cols-[2fr_1fr]">

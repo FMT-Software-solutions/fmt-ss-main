@@ -63,7 +63,7 @@ export function AppProvisioningForm({
     }
   };
 
-  const handleFirstAppDetailsChange = (field: keyof AppProvisioningDetails, value: string | boolean) => {
+  const handleFirstAppDetailsChange = (field: keyof AppProvisioningDetails, value: string | boolean | undefined) => {
     if (useSameForAll && validCartItems.length > 0) {
       const firstProductId = validCartItems[0].productId;
       
@@ -114,9 +114,9 @@ export function AppProvisioningForm({
                         }
                         // Clear userEmail when checkbox is checked
                         if (checked) {
-                          form.setValue(`appProvisioningDetails.${productId}.userEmail`, '');
+                          form.setValue(`appProvisioningDetails.${productId}.userEmail`, undefined);
                           if (isFirstApp) {
-                            handleFirstAppDetailsChange('userEmail', '');
+                            handleFirstAppDetailsChange('userEmail', undefined);
                           }
                         }
                       }}
