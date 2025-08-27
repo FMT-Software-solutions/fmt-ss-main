@@ -10,16 +10,16 @@ import Link from 'next/link';
 const benefits = [
   {
     icon: Rocket,
-    text: 'Fast Development'
+    text: 'Fast Development',
   },
   {
     icon: Users,
-    text: 'Expert Team'
+    text: 'Expert Team',
   },
   {
     icon: Zap,
-    text: 'Modern Technology'
-  }
+    text: 'Modern Technology',
+  },
 ];
 
 export function CTASection() {
@@ -29,31 +29,18 @@ export function CTASection() {
       <div className="absolute inset-0">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
           className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ rotate: -360 }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
           className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-secondary/10 rounded-full blur-3xl"
         />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Badge variant="outline" className="mx-auto mb-6">
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Let's Build Together
-            </Badge>
-          </motion.div>
-
           {/* Heading */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -66,7 +53,9 @@ export function CTASection() {
               Ready to Transform Your Ideas Into Reality?
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Whether you need a custom web application, mobile app, or desktop solution, our expert team is here to bring your vision to life. Let's discuss your project and create something amazing together.
+              Whether you need a custom web application, mobile app, or desktop
+              solution, our expert team is here to bring your vision to life.
+              Let's discuss your project and create something amazing together.
             </p>
           </motion.div>
 
@@ -104,10 +93,10 @@ export function CTASection() {
             viewport={{ once: true }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4"
           >
-            <Link href="#contact">
+            <Link href="/store">
               <Button size="lg" className="group relative overflow-hidden">
                 <span className="relative z-10 flex items-center">
-                  Start Your Project
+                  Look for apps
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </span>
                 <motion.div
@@ -117,11 +106,11 @@ export function CTASection() {
                 />
               </Button>
             </Link>
-            
-            <Link href="#contact">
+
+            <Link href="/contact">
               <Button variant="outline" size="lg" className="group">
                 <MessageCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                Get Free Consultation
+                Contact us
               </Button>
             </Link>
           </motion.div>
@@ -135,20 +124,20 @@ export function CTASection() {
             className="pt-8 border-t border-border/20"
           >
             <p className="text-sm text-muted-foreground mb-4">
-              Trusted by businesses worldwide
+              Trusted by businesses
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
               {/* Placeholder for client logos or trust indicators */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary/20 rounded"></div>
+                <div className="w-8 h-8 bg-primary/50 rounded"></div>
                 <span className="text-sm font-medium">Enterprise Ready</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-green-500/20 rounded"></div>
-                <span className="text-sm font-medium">99.9% Uptime</span>
+                <div className="w-8 h-8 bg-green-500/50 rounded"></div>
+                <span className="text-sm font-medium">99% Uptime</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-500/20 rounded"></div>
+                <div className="w-8 h-8 bg-blue-500/50 rounded"></div>
                 <span className="text-sm font-medium">24/7 Support</span>
               </div>
             </div>

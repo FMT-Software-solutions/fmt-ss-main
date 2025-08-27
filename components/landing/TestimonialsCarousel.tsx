@@ -10,7 +10,7 @@ import { Quote } from 'lucide-react';
 const defaultTestimonials = [
   {
     text:
-      'FMT Software Solutions delivered our enterprise web application on time and exceeded our expectations. The team\'s expertise in modern technologies is outstanding.',
+      "FMT Software Solutions delivered our enterprise web application on time and exceeded our expectations. The team's expertise in modern technologies is outstanding.",
     imageSrc: '/assets/avatars/avatar-1.webp',
     name: 'Sarah Johnson',
     username: '@sarahj_tech',
@@ -19,15 +19,15 @@ const defaultTestimonials = [
   {
     text:
       'The mobile app they built for us has over 50,000 downloads and 4.8-star rating. Incredible user experience and performance.',
-    imageSrc: '/assets/avatars/avatar-2.webp',
+    imageSrc: '',
     name: 'Michael Chen',
     username: '@mchen_startup',
     role: 'Founder, InnovateLab',
   },
   {
     text:
-      'Our desktop application handles complex data processing seamlessly. FMT\'s team understood our requirements perfectly.',
-    imageSrc: '/assets/avatars/avatar-3.webp',
+      "Our desktop application handles complex data processing seamlessly. FMT's team understood our requirements perfectly.",
+    imageSrc: '',
     name: 'Emily Rodriguez',
     username: '@emily_ops',
     role: 'Operations Director',
@@ -35,15 +35,15 @@ const defaultTestimonials = [
   {
     text:
       'Professional, reliable, and innovative. They transformed our legacy system into a modern, scalable solution.',
-    imageSrc: '/assets/avatars/avatar-4.webp',
+    imageSrc: '',
     name: 'David Kumar',
     username: '@davidk_dev',
     role: 'Lead Developer',
   },
   {
     text:
-      'The custom software solution increased our productivity by 40%. Best investment we\'ve made for our business.',
-    imageSrc: '/assets/avatars/avatar-5.webp',
+      "The custom software solution increased our productivity by 40%. Best investment we've made for our business.",
+    imageSrc: '',
     name: 'Lisa Thompson',
     username: '@lisa_biz',
     role: 'Business Owner',
@@ -51,7 +51,7 @@ const defaultTestimonials = [
   {
     text:
       'From concept to deployment, FMT guided us through every step. Their support and expertise are unmatched.',
-    imageSrc: '/assets/avatars/avatar-6.webp',
+    imageSrc: '',
     name: 'James Wilson',
     username: '@jwilson_pm',
     role: 'Project Manager',

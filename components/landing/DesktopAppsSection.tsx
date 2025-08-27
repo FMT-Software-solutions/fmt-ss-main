@@ -4,28 +4,29 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Cpu, HardDrive, Wifi } from 'lucide-react';
+import Image from 'next/image';
 
 const features = [
   {
     icon: Cpu,
     title: 'High Performance',
-    description: 'Native performance with optimized resource usage'
+    description: 'Native performance with optimized resource usage',
   },
   {
     icon: HardDrive,
     title: 'Offline Capable',
-    description: 'Works seamlessly without internet connection'
+    description: 'Works seamlessly without internet connection',
   },
   {
     icon: Wifi,
     title: 'System Integration',
-    description: 'Deep integration with operating system features'
+    description: 'Deep integration with operating system features',
   },
   {
     icon: Monitor,
     title: 'Multi-Platform',
-    description: 'Windows, macOS, and Linux compatibility'
-  }
+    description: 'Windows, macOS, and Linux compatibility',
+  },
 ];
 
 export function DesktopAppsSection() {
@@ -46,59 +47,43 @@ export function DesktopAppsSection() {
               {/* Monitor Base */}
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-gradient-to-b from-secondary to-secondary/50 rounded-b-lg"></div>
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-4 h-12 bg-secondary/80 rounded-t-sm"></div>
-              
+
               {/* Monitor Screen */}
               <div className="bg-card border-4 border-secondary/30 rounded-lg shadow-2xl overflow-hidden mb-12">
                 {/* Screen Bezel */}
-                <div className="bg-secondary/20 p-2">
+                <div className="bg-secondary/50 dark:bg-primary/20 p-2">
                   <div className="bg-gradient-to-br from-background to-secondary/10 rounded aspect-video relative overflow-hidden">
                     {/* Desktop App Interface */}
                     <div className="absolute inset-0 p-4">
                       {/* Title Bar */}
-                      <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-t-lg p-3 flex items-center justify-between mb-1">
+                      <div className="bg-card/80 backdrop-blur-sm border border-primary/30 rounded-t-lg p-3 flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="flex space-x-1.5">
                             <div className="w-3 h-3 rounded-full bg-red-500"></div>
                             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                             <div className="w-3 h-3 rounded-full bg-green-500"></div>
                           </div>
-                          <span className="text-sm font-medium">Professional Desktop App</span>
+                          <span className="text-sm font-medium">
+                            Professional Desktop App
+                          </span>
                         </div>
                         <div className="flex space-x-2">
                           <div className="w-4 h-4 bg-secondary/50 rounded"></div>
                           <div className="w-4 h-4 bg-secondary/50 rounded"></div>
                         </div>
                       </div>
-                      
+
                       {/* App Content */}
-                      <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-b-lg p-4 h-full">
-                        {/* Sidebar */}
-                        <div className="flex h-full space-x-4">
-                          <div className="w-1/4 space-y-2">
-                            <div className="h-8 bg-primary/20 rounded"></div>
-                            <div className="h-6 bg-secondary/50 rounded"></div>
-                            <div className="h-6 bg-secondary/30 rounded"></div>
-                            <div className="h-6 bg-secondary/30 rounded"></div>
-                          </div>
-                          
-                          {/* Main Content */}
-                          <div className="flex-1 space-y-3">
-                            <div className="h-12 bg-gradient-to-r from-primary/20 to-primary/10 rounded"></div>
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="h-16 bg-secondary/40 rounded"></div>
-                              <div className="h-16 bg-secondary/40 rounded"></div>
-                              <div className="h-16 bg-secondary/40 rounded"></div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="h-4 bg-secondary/30 rounded w-3/4"></div>
-                              <div className="h-4 bg-secondary/30 rounded w-1/2"></div>
-                              <div className="h-4 bg-secondary/30 rounded w-2/3"></div>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="bg-card/80 backdrop-blur-sm border border-primary/30 border-t-0 rounded-b-lg p-4 h-full">
+                        <Image
+                          src="./images/psp-shot.png"
+                          alt="Desktop App Screenshot"
+                          width={1200}
+                          height={1200}
+                        />
                       </div>
                     </div>
-                    
+
                     {/* Animated Elements */}
                     <motion.div
                       animate={{ opacity: [0.5, 1, 0.5] }}
@@ -113,12 +98,12 @@ export function DesktopAppsSection() {
             {/* Floating Elements */}
             <motion.div
               animate={{ y: [-15, 15, -15] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute -top-8 -left-8 w-24 h-24 bg-primary/10 rounded-full blur-xl"
             />
             <motion.div
               animate={{ y: [15, -15, 15] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute -bottom-4 -right-8 w-32 h-32 bg-secondary/20 rounded-full blur-xl"
             />
           </motion.div>
@@ -140,7 +125,9 @@ export function DesktopAppsSection() {
                 Powerful Desktop Solutions
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Build robust desktop applications that leverage the full power of modern operating systems. Our solutions deliver native performance with beautiful, intuitive interfaces.
+                Build robust desktop applications that leverage the full power
+                of modern operating systems. Our solutions deliver native
+                performance with beautiful, intuitive interfaces.
               </p>
             </div>
 

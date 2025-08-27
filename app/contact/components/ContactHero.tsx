@@ -11,7 +11,7 @@ export default function ContactHero() {
     >
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
           Have questions about our products or services? We're here to help.
           Reach out to us and we'll get back to you as soon as possible.
         </p>

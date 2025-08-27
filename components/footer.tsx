@@ -49,8 +49,8 @@ export function Footer() {
               </Link>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Building innovative software solutions that address real
-              challenges and accelerate growth.
+              Building innovative software solutions that addresses real-world
+              challenges and accelerate business growth.
             </p>
           </div>
 

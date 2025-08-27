@@ -57,10 +57,6 @@ export function Navigation() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { config, loading } = usePlatformConfig();
 
-  if (pathname.includes('/admin')) {
-    return null;
-  }
-
   // Filter navigation links based on feature flags
   const navigationLinks = React.useMemo(() => {
     if (!config?.user_feature_flags) {
@@ -76,6 +72,10 @@ export function Navigation() {
       );
     });
   }, [config?.user_feature_flags]);
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/studio')) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

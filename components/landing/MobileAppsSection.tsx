@@ -9,23 +9,23 @@ const features = [
   {
     icon: Zap,
     title: 'Native Performance',
-    description: 'Smooth, responsive apps built for iOS and Android'
+    description: 'Smooth, responsive apps built for iOS and Android',
   },
   {
     icon: Users,
     title: 'User-Centric Design',
-    description: 'Intuitive interfaces that users love to interact with'
+    description: 'Intuitive interfaces that users love to interact with',
   },
   {
     icon: Bell,
     title: 'Push Notifications',
-    description: 'Keep users engaged with smart notification systems'
+    description: 'Keep users engaged with smart notification systems',
   },
   {
     icon: Shield,
     title: 'Secure & Private',
-    description: 'Enterprise-grade security for sensitive data'
-  }
+    description: 'Enterprise-grade security for sensitive data',
+  },
 ];
 
 export function MobileAppsSection() {
@@ -50,7 +50,9 @@ export function MobileAppsSection() {
                 Mobile-First Experiences
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Create engaging mobile applications that connect with your users wherever they are. From concept to app store, we deliver solutions that drive engagement and growth.
+                Create engaging mobile applications that connect with your users
+                wherever they are. From concept to app store, we deliver
+                solutions that drive engagement and growth.
               </p>
             </div>
 
@@ -93,9 +95,9 @@ export function MobileAppsSection() {
             {/* Phone Frame */}
             <div className="relative">
               {/* Phone Body */}
-              <div className="w-72 h-[600px] bg-gradient-to-b from-secondary/30 to-secondary/10 rounded-[3rem] p-3 shadow-2xl border border-border/20">
+              <div className="w-72 h-[600px] bg-gradient-to-b from-secondary/30 to-secondary/10 rounded-[3rem] p-3 shadow-2xl border border-primary/20">
                 {/* Screen */}
-                <div className="w-full h-full bg-card rounded-[2.5rem] overflow-hidden relative border border-border/30">
+                <div className="w-full h-full bg-card rounded-[2.5rem] overflow-hidden relative border border-primary/10">
                   {/* Status Bar */}
                   <div className="bg-background/95 backdrop-blur-sm px-6 py-3 flex justify-between items-center text-xs">
                     <span className="font-medium">9:41</span>
@@ -106,20 +108,22 @@ export function MobileAppsSection() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* App Content */}
                   <div className="flex-1 bg-gradient-to-br from-background to-secondary/10 p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="text-lg font-bold">Dashboard</h3>
-                        <p className="text-sm text-muted-foreground">Welcome back!</p>
+                        <p className="text-sm text-muted-foreground">
+                          Welcome back!
+                        </p>
                       </div>
                       <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
                         <div className="w-6 h-6 bg-primary/40 rounded-full"></div>
                       </div>
                     </div>
-                    
+
                     {/* Stats Cards */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-4">
@@ -133,29 +137,41 @@ export function MobileAppsSection() {
                         <div className="h-3 bg-secondary/30 rounded w-2/3"></div>
                       </div>
                     </div>
-                    
+
                     {/* Chart Area */}
                     <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-4 mb-6">
                       <div className="h-3 bg-secondary/40 rounded mb-3 w-1/3"></div>
                       <div className="h-24 bg-gradient-to-t from-primary/20 to-primary/5 rounded-lg relative overflow-hidden">
                         <motion.div
                           animate={{ x: [-20, 20, -20] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
                           className="absolute bottom-0 left-4 w-1 h-16 bg-primary/60 rounded-full"
                         />
                         <motion.div
                           animate={{ x: [20, -20, 20] }}
-                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
                           className="absolute bottom-0 left-8 w-1 h-12 bg-primary/40 rounded-full"
                         />
                         <motion.div
                           animate={{ x: [-10, 30, -10] }}
-                          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                          transition={{
+                            duration: 3.5,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
                           className="absolute bottom-0 left-12 w-1 h-20 bg-primary/80 rounded-full"
                         />
                       </div>
                     </div>
-                    
+
                     {/* List Items */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3 p-3 bg-card/60 rounded-lg">
@@ -174,29 +190,22 @@ export function MobileAppsSection() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Home Indicator */}
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-foreground/20 rounded-full"></div>
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-foreground/20 rounded-full"></div>
                 </div>
               </div>
-              
-              {/* Notification Dot */}
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute top-8 right-8 w-3 h-3 bg-red-500 rounded-full"
-              />
             </div>
 
             {/* Floating Elements */}
             <motion.div
               animate={{ y: [-20, 20, -20] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute -top-12 -left-12 w-32 h-32 bg-primary/10 rounded-full blur-xl"
             />
             <motion.div
               animate={{ y: [20, -20, 20] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute -bottom-8 -right-8 w-24 h-24 bg-secondary/20 rounded-full blur-xl"
             />
           </motion.div>

@@ -115,8 +115,8 @@ export default function HeroSection() {
               {' '}
               desktop apps
             </span>{' '}
-            that address real challenges across all sectors to accelerate growth
-            and progress.
+            that address real challenges across all sectors to help the growth
+            of your business or organization.
           </motion.p>
 
           {/* CTA Buttons */}
