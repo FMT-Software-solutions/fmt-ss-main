@@ -151,7 +151,7 @@ function validateProvisioningDetails(
     return { isValid: false, error: 'Missing billingDetails' };
   }
 
-  const requiredBillingFields = ['organizationName', 'organizationEmail', 'phoneNumber', 'address'];
+  const requiredBillingFields = ['organizationName', 'organizationEmail', 'address'];
   for (const field of requiredBillingFields) {
     if (!billingDetails[field]) {
       return { isValid: false, error: `Missing required billing field: ${field}` };

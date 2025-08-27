@@ -1,16 +1,18 @@
+'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 // Footer links data - defined outside component
 const footerLinks = {
   products: [
-    { href: '/projects', label: 'Public Projects' },
-    { href: '/store', label: 'Premium Apps' },
-    { href: '/free-apps', label: 'Free Apps' },
+    // { href: '/projects', label: 'Public Projects' },
+    { href: '/store', label: 'Marketplace' },
+    // { href: '/free-apps', label: 'Free Apps' },
   ],
-  training: [
-    { href: '/training', label: 'Training Programs' },
-    { href: '/events', label: 'Events' },
-  ],
+  // training: [
+  //   { href: '/training', label: 'Training Programs' },
+  //   { href: '/events', label: 'Events' },
+  // ],
   company: [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
@@ -18,13 +20,18 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const pathname = usePathname();
   // Current year calculation is done during render
   const currentYear = new Date().getFullYear();
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/studio')) {
+    return null;
+  }
 
   return (
     <footer className="w-full border-t bg-background">
       <div className="container py-10">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           <div>
             <div className="flex items-center space-x-2">
               <Link href="/" className="flex items-end space-x-2">
@@ -48,7 +55,7 @@ export function Footer() {
           </div>
 
           <FooterLinkSection title="Solutions" links={footerLinks.products} />
-          <FooterLinkSection title="Training" links={footerLinks.training} />
+          {/* <FooterLinkSection title="Training" links={footerLinks.training} /> */}
           <FooterLinkSection title="Company" links={footerLinks.company} />
         </div>
 
@@ -67,12 +74,12 @@ function FooterLinkSection({
   title,
   links,
 }: {
-  title: string;
+  title?: string;
   links: Array<{ href: string; label: string }>;
 }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold">{title}</h3>
+      {title && <h3 className="text-lg font-semibold">{title}</h3>}
       <ul className="mt-4 space-y-2">
         {links.map(({ href, label }) => (
           <li key={href}>

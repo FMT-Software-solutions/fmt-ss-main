@@ -196,7 +196,7 @@ export function OrganizationDetailsForm({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-medium">
-                    Use same organization email as admin email
+                    Use same organization email as admin/login email
                   </FormLabel>
                 </div>
               </FormItem>
@@ -209,11 +209,11 @@ export function OrganizationDetailsForm({
               name={`appProvisioningDetails.${productId}.userEmail`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Admin Email</FormLabel>
+                  <FormLabel>Admin/Login Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Enter admin email"
+                      placeholder="Enter login email"
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
@@ -277,7 +277,11 @@ export function OrganizationDetailsForm({
           const isFirstApp = index === 0;
 
           return (
-            <AccordionItem key={item.product._id} value={item.product._id}>
+            <AccordionItem
+              key={item.product._id}
+              value={item.product._id}
+              className="border-none"
+            >
               <Card className="p-0">
                 <AccordionTrigger className="px-6 py-4 hover:no-underline">
                   <div className="flex items-center justify-between w-full">

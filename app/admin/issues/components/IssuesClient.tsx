@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Download, AlertTriangle } from 'lucide-react';
 import { issuesClient } from '@/services/issues/client';
 import type { Issue } from '@/types/issues';
-import IssueDetailModal from './IssueDetailModal';
-import IssueStats from './IssueStats';
-import IssueList from './IssueList';
+import { AlertTriangle, Download, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import IssueDetailModal from './IssueDetailModal';
+import IssueList from './IssueList';
+import IssueStats from './IssueStats';
 
 interface IssuesClientProps {
   initialIssues: Issue[];
@@ -20,35 +19,54 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
   const [issues, setIssues] = useState<Issue[]>(initialIssues);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleUpdateIssueStatus = async (issueId: string, status: Issue['status'], resolutionNotes?: string) => {
+  const handleUpdateIssueStatus = async (
+    issueId: string,
+    status: Issue['status'],
+    resolutionNotes?: string
+  ) => {
     try {
-      const result = await issuesClient.updateIssueStatus(issueId, status, resolutionNotes);
-      
+      const result = await issuesClient.updateIssueStatus(
+        issueId,
+        status,
+        resolutionNotes
+      );
+
       if (result.success) {
         // Update the issue in the local state
-        setIssues(prev => prev.map(issue => 
-          issue.id === issueId 
-            ? { 
-                ...issue, 
-                status, 
-                resolved_at: status === 'resolved' ? new Date().toISOString() : issue.resolved_at,
-                resolution_notes: resolutionNotes || issue.resolution_notes
-              }
-            : issue
-        ));
-        
+        setIssues((prev) =>
+          prev.map((issue) =>
+            issue.id === issueId
+              ? {
+                  ...issue,
+                  status,
+                  resolved_at:
+                    status === 'resolved'
+                      ? new Date().toISOString()
+                      : issue.resolved_at,
+                  resolution_notes: resolutionNotes || issue.resolution_notes,
+                }
+              : issue
+          )
+        );
+
         // Update selected issue if it's the one being updated
         if (selectedIssue?.id === issueId) {
-          setSelectedIssue(prev => prev ? {
-            ...prev,
-            status,
-            resolved_at: status === 'resolved' ? new Date().toISOString() : prev.resolved_at,
-            resolution_notes: resolutionNotes || prev.resolution_notes
-          } : null);
+          setSelectedIssue((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status,
+                  resolved_at:
+                    status === 'resolved'
+                      ? new Date().toISOString()
+                      : prev.resolved_at,
+                  resolution_notes: resolutionNotes || prev.resolution_notes,
+                }
+              : null
+          );
         }
-        
+
         toast.success('Issue status updated successfully');
       } else {
         console.error('Failed to update issue status:', result.error);
@@ -71,8 +89,12 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      router.refresh();
-      toast.success('Issues refreshed');
+      const result = await issuesClient.getIssues();
+      if (result.success && result.issues) {
+        setIssues(result.issues);
+      } else {
+        toast.error(result.error || 'Failed to load issues. Please try again.');
+      }
     } catch (error) {
       toast.error('Failed to refresh issues');
     } finally {
@@ -83,29 +105,43 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
   const handleExportCSV = () => {
     try {
       const csvContent = [
-        ['ID', 'Title', 'Type', 'Severity', 'Status', 'Created At', 'User ID', 'Organization ID'].join(','),
-        ...issues.map(issue => [
-          issue.id,
-          `"${issue.title.replace(/"/g, '""')}"`,
-          issue.issue_type,
-          issue.severity,
-          issue.status,
-          issue.created_at,
-          issue.user_id || '',
-          issue.organization_id || ''
-        ].join(','))
+        [
+          'ID',
+          'Title',
+          'Type',
+          'Severity',
+          'Status',
+          'Created At',
+          'User ID',
+          'Organization ID',
+        ].join(','),
+        ...issues.map((issue) =>
+          [
+            issue.id,
+            `"${issue.title.replace(/"/g, '""')}"`,
+            issue.issue_type,
+            issue.severity,
+            issue.status,
+            issue.created_at,
+            issue.user_id || '',
+            issue.organization_id || '',
+          ].join(',')
+        ),
       ].join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `issues-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute(
+        'download',
+        `issues-${new Date().toISOString().split('T')[0]}.csv`
+      );
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast.success('Issues exported to CSV');
     } catch (error) {
       console.error('Failed to export CSV:', error);
@@ -128,14 +164,12 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
             onClick={handleRefresh}
             disabled={loading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-          >
+          <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
@@ -173,7 +207,7 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
 
         <TabsContent value="open" className="space-y-4">
           <IssueList
-            issues={issues.filter(issue => issue.status === 'open')}
+            issues={issues.filter((issue) => issue.status === 'open')}
             onIssueClick={handleIssueClick}
             showFilters={false}
           />
@@ -181,7 +215,7 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
 
         <TabsContent value="investigating" className="space-y-4">
           <IssueList
-            issues={issues.filter(issue => issue.status === 'investigating')}
+            issues={issues.filter((issue) => issue.status === 'investigating')}
             onIssueClick={handleIssueClick}
             showFilters={false}
           />
@@ -189,7 +223,7 @@ export default function IssuesClient({ initialIssues }: IssuesClientProps) {
 
         <TabsContent value="resolved" className="space-y-4">
           <IssueList
-            issues={issues.filter(issue => issue.status === 'resolved')}
+            issues={issues.filter((issue) => issue.status === 'resolved')}
             onIssueClick={handleIssueClick}
             showFilters={false}
           />

@@ -34,7 +34,31 @@ export async function middleware(request: NextRequest) {
   // issues with users being randomly logged out.
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Check if the user is trying to access admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // Allow access to the login page
+    if (request.nextUrl.pathname === '/admin/login') {
+      // If user is already logged in, redirect to admin dashboard
+      if (user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/admin/dashboard';
+        return NextResponse.redirect(url);
+      }
+      // Allow access to login page for unauthenticated users
+      return supabaseResponse;
+    }
+
+    // For all other admin routes, require authentication
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin/login';
+      return NextResponse.redirect(url);
+    }
+  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   return supabaseResponse;
