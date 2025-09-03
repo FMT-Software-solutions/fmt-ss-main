@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export function GET(): MetadataRoute.Sitemap {
   const baseUrl = 'https://fmtsoftware.com'
   
   return [

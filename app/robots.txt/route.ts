@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-export default function robots(): MetadataRoute.Robots {
+export function GET(): MetadataRoute.Robots {
   const baseUrl = 'https://fmtsoftware.com'
   
   return {
