@@ -3,33 +3,48 @@ import AboutHero from './AboutHero';
 import AboutCards from './AboutCards';
 import AboutStory from './AboutStory';
 import AboutAchievements from './AboutAchievements';
-import { featureFlags } from '@/consts/feature-flags';
+import TeamSection from './TeamSection';
+import FocusAreas from './FocusAreas';
 
 export const metadata: Metadata = {
-  title: 'About FMT Software Solutions',
-  description:
-    'Learn about our mission, vision, and how we build software solutions to address challenges in Ghana and provide premium services to businesses and individuals.',
+  title: 'About Us - FMT Software Solutions | Ghana\'s Leading Software Development Company',
+  description: 'Learn about FMT Software Solutions, Ghana\'s premier software development company. Discover our mission, values, story, and achievements in building innovative technology solutions for Africa and beyond.',
+  keywords: 'about FMT Software Solutions, Ghana software company, African tech company, software development team, company history, mission values, technology solutions Ghana',
+  openGraph: {
+    title: 'About Us - FMT Software Solutions | Ghana\'s Leading Software Development Company',
+    description: 'Learn about FMT Software Solutions, Ghana\'s premier software development company. Discover our mission, values, story, and achievements in building innovative technology solutions for Africa and beyond.',
+    url: 'https://fmtsoftware.com/about',
+    images: [
+      {
+        url: 'https://fmtsoftware.com/images/fmt-bg.png',
+        width: 1200,
+        height: 630,
+        alt: 'About FMT Software Solutions',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Us - FMT Software Solutions | Ghana\'s Leading Software Development Company',
+    description: 'Learn about FMT Software Solutions, Ghana\'s premier software development company. Discover our mission, values, story, and achievements in building innovative technology solutions for Africa and beyond.',
+    images: ['https://fmtsoftware.com/images/fmt-bg.png'],
+  },
+  alternates: {
+    canonical: 'https://fmtsoftware.com/about',
+  },
 };
 
-// This is now a Server Component in React 19
-export default function About() {
+export default function AboutPage() {
   return (
-    <main className="min-h-screen py-12">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4">
         <AboutHero />
         <AboutCards />
         <AboutStory />
-        {featureFlags.achievements && <AboutAchievements />}
-
-        <div className="text-center mt-12 mb-8">
-          <h2 className="text-3xl font-bold mb-4">Our Focus Areas</h2>
-          <p className="text-muted-foreground max-w-3xl mx-auto">
-            We work on innovative apps and projects to address issues and
-            challenges in Ghana as a country. Our goal is to build solutions
-            that drive Ghana's development across all sectors.
-          </p>
-        </div>
+        <TeamSection />
+        <AboutAchievements />
+        <FocusAreas />
       </div>
-    </main>
+    </div>
   );
 }

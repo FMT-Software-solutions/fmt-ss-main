@@ -6,9 +6,41 @@ import ClientProjectsContainer from './components/ClientProjectsContainer';
 import { fallbackProjects } from './fallbackProjects';
 
 export const metadata: Metadata = {
-  title: 'Public Projects | FMT Software Solutions',
+  title: 'Public Projects - Innovation for Ghana',
   description:
-    'Explore our innovative public projects addressing real challenges',
+    'Explore our innovative public projects addressing real challenges in Ghana and beyond. Discover how FMT Software Solutions builds technology solutions that drive development across all sectors.',
+  keywords: [
+    'public projects Ghana',
+    'innovation projects',
+    'technology solutions Ghana',
+    'software development projects',
+    'Ghana development projects',
+    'tech innovation Africa',
+    'public sector software',
+    'community projects'
+  ],
+  openGraph: {
+    title: 'Public Projects - Innovation for Ghana | FMT Software Solutions',
+    description: 'Explore our innovative public projects addressing real challenges in Ghana. Technology solutions that drive development across all sectors.',
+    url: 'https://fmtsoftware.com/projects',
+    images: [
+      {
+        url: 'https://fmtsoftware.com/images/fmt-bg.png',
+        width: 1200,
+        height: 630,
+        alt: 'Public Projects - FMT Software Solutions',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Public Projects - Innovation for Ghana | FMT Software Solutions',
+    description: 'Explore our innovative public projects addressing real challenges in Ghana.',
+    images: ['https://fmtsoftware.com/images/fmt-bg.png'],
+  },
+  alternates: {
+    canonical: 'https://fmtsoftware.com/projects',
+  },
 };
 
 export default async function ProjectsPage() {

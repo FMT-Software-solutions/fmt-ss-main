@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       to: 'fmtsoftwaresolutions@gmail.com',
       subject: `New Contact Form Submission from ${name}`,
       react: ContactFormEmail({ name, email, message }),
+      cc: 'ankomaheneshadrack@gmail.com',
     });
 
     if (emailError) {
