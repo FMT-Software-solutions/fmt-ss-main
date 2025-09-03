@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /studio/
+Disallow: /_next/
+Disallow: /newsletter/debug/
+Disallow: /newsletter/test/
+
+Sitemap: https://fmtsoftware.com/sitemap.xml
+Host: https://fmtsoftware.com
