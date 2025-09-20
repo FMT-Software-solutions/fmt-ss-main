@@ -41,5 +41,10 @@ export default async function TrainingDetailPage({
     notFound();
   }
 
+  // If training is not published, return 404 (only published trainings should be accessible)
+  if (!training.isPublished) {
+    notFound();
+  }
+
   return <TrainingDetailClient training={training} />;
 }

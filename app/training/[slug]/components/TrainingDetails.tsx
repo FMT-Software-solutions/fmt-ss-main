@@ -107,34 +107,39 @@ export default function TrainingDetails({ training }: TrainingDetailsProps) {
         )}
 
         {hasMaxParticipants && (
-          <div className="flex items-start">
-            <Users className="h-5 w-5 mr-3 mt-1 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="font-medium">Registration Status</p>
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">
-                  {registeredParticipants} / {maxParticipants} registered
-                </p>
+          <div className="hidden">
+            <div className="flex items-start">
+              <Users className="h-5 w-5 mr-3 mt-1 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="font-medium">Registration Status</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-muted-foreground">
+                    {registeredParticipants} / {maxParticipants} registered
+                  </p>
+                  {isFull && (
+                    <Badge
+                      variant="outline"
+                      className="bg-red-100 text-red-800"
+                    >
+                      Full
+                    </Badge>
+                  )}
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${
+                      isFull ? 'bg-destructive' : 'bg-primary'
+                    }`}
+                    style={{ width: `${registrationPercentage}%` }}
+                  ></div>
+                </div>
                 {isFull && (
-                  <Badge variant="outline" className="bg-red-100 text-red-800">
-                    Full
-                  </Badge>
+                  <div className="flex items-center mt-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    <span>Registration is closed for this training</span>
+                  </div>
                 )}
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full ${
-                    isFull ? 'bg-destructive' : 'bg-primary'
-                  }`}
-                  style={{ width: `${registrationPercentage}%` }}
-                ></div>
-              </div>
-              {isFull && (
-                <div className="flex items-center mt-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  <span>Registration is closed for this training</span>
-                </div>
-              )}
             </div>
           </div>
         )}

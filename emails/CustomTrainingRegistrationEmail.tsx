@@ -18,6 +18,7 @@ interface CustomTrainingRegistrationEmailProps {
   firstName: string;
   training: any;
   registrationDetails: {
+    session?: string;
     about: string;
     experience: string[];
     expectations: string;
@@ -109,8 +110,7 @@ More info: ${trainingUrl}`;
             </Text>
 
             <Text style={highlightTextStyle}>
-              Your registration has been confirmed and you're all set for this
-              FREE training program! 🚀
+              Your registration has been confirmed and you're all set
             </Text>
 
             <Hr style={hrStyle} />
@@ -180,25 +180,29 @@ More info: ${trainingUrl}`;
                 View Training Details
               </Button>
 
-              {calendarLink && (
+              {(training.price === 0 || training.isFree) && calendarLink && (
                 <Button href={calendarLink} style={secondaryButtonStyle}>
                   📅 Add to Google Calendar
                 </Button>
               )}
 
-              {training.eventLinks && training.eventLinks.length > 0 && (
-                <>
-                  {training.eventLinks.map((eventLink: any, index: number) => (
-                    <Button
-                      key={index}
-                      href={eventLink.link}
-                      style={primaryButtonStyle}
-                    >
-                      {eventLink.linkText}
-                    </Button>
-                  ))}
-                </>
-              )}
+              {(training.price === 0 || training.isFree) &&
+                training.eventLinks &&
+                training.eventLinks.length > 0 && (
+                  <>
+                    {training.eventLinks.map(
+                      (eventLink: any, index: number) => (
+                        <Button
+                          key={index}
+                          href={eventLink.link}
+                          style={primaryButtonStyle}
+                        >
+                          {eventLink.linkText}
+                        </Button>
+                      )
+                    )}
+                  </>
+                )}
             </div>
 
             <Hr style={hrStyle} />

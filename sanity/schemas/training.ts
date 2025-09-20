@@ -301,6 +301,33 @@ export default defineType({
       title: 'Published At',
       type: 'datetime',
     }),
+    defineField({
+      name: 'isPublished',
+      title: 'Publish Live',
+      type: 'boolean',
+      description: 'Enable this to publish the training live and allow registrations. Disable to keep in draft mode.',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'registrationEndDate',
+      title: 'Registration End Date',
+      type: 'datetime',
+      description: 'The deadline for registrations. After this date, registrations will be automatically closed.',
+      validation: (Rule) => Rule.custom((value, context) => {
+        const document = context.document as any;
+        if (document?.startDate && value && new Date(value) > new Date(document.startDate)) {
+          return 'Registration end date must be before the training start date';
+        }
+        return true;
+      }),
+    }),
+    defineField({
+      name: 'closeRegistration',
+      title: 'Close Registration',
+      type: 'boolean',
+      description: 'Manually disable registrations before the end date (e.g., when spots are full or training is cancelled).',
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {
@@ -309,13 +336,16 @@ export default defineType({
       media: 'mainImage',
       price: 'price',
       isFree: 'isFree',
+      isPublished: 'isPublished',
+      closeRegistration: 'closeRegistration',
     },
     prepare(selection) {
-      const { title, types, media, price, isFree } = selection;
+      const { title, types, media, price, isFree, isPublished, closeRegistration } = selection;
       const trainingTypes =
         types?.map((type: any) => type.name).join(', ') || 'Training';
+      const status = !isPublished ? '🔒 Draft' : closeRegistration ? '❌ Closed' : '✅ Live';
       return {
-        title,
+        title: `${status} ${title}`,
         subtitle: `${trainingTypes} - ${isFree ? 'Free' : `GHS${price}`}`,
         media,
       };

@@ -16,7 +16,9 @@ interface CustomRegistrationFromDB {
   email: string;
   phone: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_method?: 'paystack' | 'momo' | null;
   details: {
+    session?: string;
     about?: string;
     experience: string[];
     expectations?: string;
@@ -37,6 +39,7 @@ interface RegularRegistrationFromDB {
   company: string | null;
   message: string | null;
   status: 'pending' | 'confirmed' | 'cancelled' | 'attended';
+  payment_method?: 'paystack' | 'momo' | null;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +54,7 @@ interface BaseRegistration {
   email: string;
   phone: string | null;
   status: 'pending' | 'confirmed' | 'cancelled' | 'attended';
+  payment_method?: 'paystack' | 'momo' | null;
   created_at: string;
   updated_at: string;
 }
@@ -66,6 +70,7 @@ interface CustomRegistration extends BaseRegistration {
   company: null;
   message: null;
   details: {
+    session?: string;
     about?: string;
     experience: string[];
     expectations?: string;
@@ -135,6 +140,7 @@ export default async function TrainingRegistrationsPage() {
     company: null,
     message: null,
     status: mapCustomStatus(reg.status),
+    payment_method: reg.payment_method,
     created_at: reg.created_at,
     updated_at: reg.updated_at,
     type: 'custom' as const,

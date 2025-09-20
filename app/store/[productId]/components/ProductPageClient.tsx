@@ -1,11 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { VideoPlayer } from '@/components/ui/video-player';
 import CustomVideoPlayer from '@/components/CustomVideoPlayer';
+import { VideoPlayer } from '@/components/ui/video-player';
 import { IPremiumApp } from '@/types/premium-app';
 import { motion } from 'framer-motion';
-import { CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCartStore } from '../../store/cart';
@@ -14,11 +12,11 @@ import ProductDescription from './ProductDescription';
 import ProductFeatures from './ProductFeatures';
 import ProductGallery from './ProductGallery';
 import ProductHero from './ProductHero';
+import ProductImage from './ProductImage';
 import ProductPlatforms from './ProductPlatforms';
 import ProductRequirements from './ProductRequirements';
 import ProductTags from './ProductTags';
 import PromotionTimer from './PromotionTimer';
-import ProductImage from './ProductImage';
 
 interface ProductPageClientProps {
   product: IPremiumApp;

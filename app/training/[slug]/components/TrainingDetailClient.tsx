@@ -21,8 +21,9 @@ export default function TrainingDetailClient({
   training,
 }: TrainingDetailClientProps) {
   const searchParams = useSearchParams();
-  const [showRegistrationFullAlert, setShowRegistrationFullAlert] =
-    useState(false);
+  const [showRegistrationFullAlert, setShowRegistrationFullAlert] = useState(
+    false
+  );
 
   useEffect(() => {
     // Check if user was redirected due to full registration
@@ -40,7 +41,7 @@ export default function TrainingDetailClient({
 
   return (
     <div className="min-h-screen py-10">
-      <div className="container max-w-6xl">
+      <div className="container max-w-7xl">
         {showRegistrationFullAlert && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}

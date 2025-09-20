@@ -246,9 +246,9 @@ export const freeAppBySlugQuery = groq`
   }
 `;
 
-// Query to get all training programs
+// Query to get all published trainings
 export const allTrainingsQuery = groq`
-  *[_type == "training"] | order(startDate asc, publishedAt desc) {
+  *[_type == "training" && isPublished == true] | order(startDate asc, publishedAt desc) {
     _id,
     title,
     slug,
@@ -269,6 +269,9 @@ export const allTrainingsQuery = groq`
     },
     registrationLink,
     startDate,
+    registrationEndDate,
+    closeRegistration,
+    isPublished,
     location,
     tags,
     featured,
@@ -276,9 +279,9 @@ export const allTrainingsQuery = groq`
   }
 `;
 
-// Query to get featured training programs
+// Query to get featured published training programs
 export const featuredTrainingsQuery = groq`
-  *[_type == "training" && featured == true] | order(startDate asc, publishedAt desc)[0...3] {
+  *[_type == "training" && featured == true && isPublished == true] | order(startDate asc, publishedAt desc)[0...3] {
     _id,
     title,
     slug,
@@ -299,6 +302,9 @@ export const featuredTrainingsQuery = groq`
     },
     registrationLink,
     startDate,
+    registrationEndDate,
+    closeRegistration,
+    isPublished,
     location,
     tags,
     featured,
@@ -332,6 +338,9 @@ export const trainingBySlugQuery = groq`
     registrationLink,
     startDate,
     endDate,
+    registrationEndDate,
+    closeRegistration,
+    isPublished,
     location,
     instructor,
     prerequisites,
@@ -370,6 +379,9 @@ export const trainingBySlugWithLinksQuery = groq`
     registrationLink,
     startDate,
     endDate,
+    registrationEndDate,
+    closeRegistration,
+    isPublished,
     location,
     eventLinks[]{
       trainingType->{

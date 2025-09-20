@@ -53,6 +53,9 @@ export interface ITraining {
   tags: string[];
   featured: boolean;
   publishedAt?: string;
+  isPublished?: boolean;
+  registrationEndDate?: string;
+  closeRegistration?: boolean;
 }
 
 // Type for the training list view (with fewer fields)
@@ -78,6 +81,9 @@ export interface ITrainingListItem {
   tags: string[];
   featured: boolean;
   publishedAt?: string;
+  isPublished?: boolean;
+  registrationEndDate?: string;
+  closeRegistration?: boolean;
 }
 
 // Type for registration data
@@ -101,7 +107,9 @@ export interface ICustomTrainingRegistration {
   email: string;
   phone: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_method?: 'paystack' | 'momo' | null;
   details: {
+    session?: string;
     about?: string;
     experience: string[];
     expectations?: string;
@@ -120,4 +128,5 @@ export interface ICustomRegistrationFormData {
   about: string;
   experience: string[];
   expectations: string;
+  paymentMethod?: 'paystack' | 'momo';
 }

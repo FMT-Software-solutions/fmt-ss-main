@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,19 +10,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Calendar, Clock, MapPin, Video, Users, Monitor } from 'lucide-react';
+import { formatCustom } from '@/lib/date';
+import { getSanityImageUrl } from '@/lib/utils';
+import { ITrainingListItem } from '@/types/training';
+import { motion } from 'framer-motion';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  MapPin,
+  Monitor,
+  Users,
+  Video,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ITrainingListItem } from '@/types/training';
-import { getSanityImageUrl } from '@/lib/utils';
-import { formatDate, formatCustom } from '@/lib/date';
 
 interface TrainingCardProps {
   training: ITrainingListItem;
@@ -30,6 +39,44 @@ interface TrainingCardProps {
 
 export default function TrainingCard({ training }: TrainingCardProps) {
   const imageUrl = getSanityImageUrl(training.mainImage);
+
+  // Check registration status
+  const getRegistrationStatus = () => {
+    // If not published, shouldn't be visible (but just in case)
+    if (!training.isPublished) {
+      return { status: 'draft', label: 'Draft', color: 'bg-gray-500' };
+    }
+
+    // If registration is manually closed
+    if (training.closeRegistration) {
+      return {
+        status: 'closed',
+        label: 'Registration Closed',
+        color: 'bg-red-500',
+      };
+    }
+
+    // If registration end date has passed
+    if (training.registrationEndDate) {
+      const now = new Date();
+      const endDate = new Date(training.registrationEndDate);
+      if (now > endDate) {
+        return {
+          status: 'expired',
+          label: 'Registration Ended',
+          color: 'bg-orange-500',
+        };
+      }
+    }
+
+    return {
+      status: 'open',
+      label: 'Registration Open',
+      color: 'bg-green-500',
+    };
+  };
+
+  const registrationStatus = getRegistrationStatus();
 
   // Get primary training type (backwards compatible)
   const getPrimaryTrainingType = () => {
@@ -100,6 +147,17 @@ export default function TrainingCard({ training }: TrainingCardProps) {
               Free
             </Badge>
           )}
+          {/* Registration Status Badge */}
+          <Badge
+            className={`absolute top-2 left-2 ${registrationStatus.color} hover:${registrationStatus.color} text-white flex items-center gap-1`}
+          >
+            {registrationStatus.status === 'open' ? (
+              <CheckCircle className="h-3 w-3" />
+            ) : (
+              <AlertCircle className="h-3 w-3" />
+            )}
+            {registrationStatus.label}
+          </Badge>
         </div>
         <CardHeader>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -178,11 +236,18 @@ export default function TrainingCard({ training }: TrainingCardProps) {
               <span>GHS{training.price}</span>
             )}
           </div>
-          <Button asChild>
-            <Link href={`/training/${training.slug.current}`}>
-              View Details
-            </Link>
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            {registrationStatus.status !== 'open' && (
+              <span className="text-xs text-muted-foreground">
+                {registrationStatus.label}
+              </span>
+            )}
+            <Button asChild>
+              <Link href={`/training/${training.slug.current}`}>
+                View Details
+              </Link>
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </motion.div>

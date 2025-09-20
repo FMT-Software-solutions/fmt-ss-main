@@ -54,6 +54,25 @@ export default async function RegistrationPage({
     notFound();
   }
 
+  // Check if training is published
+  if (!training.isPublished) {
+    notFound();
+  }
+
+  // Check if registration is manually closed
+  if (training.closeRegistration) {
+    redirect(`/training/${training.slug.current}`);
+  }
+
+  // Check if registration end date has passed
+  if (training.registrationEndDate) {
+    const now = new Date();
+    const endDate = new Date(training.registrationEndDate);
+    if (now > endDate) {
+      redirect(`/training/${training.slug.current}`);
+    }
+  }
+
   // Check if registration is full
   const hasMaxParticipants = !!training.maxParticipants;
   const registeredParticipants = training.registeredParticipants || 0;

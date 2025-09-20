@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, BookOpen } from 'lucide-react';
 import { ITraining } from '@/types/training';
 import { PortableText } from '@portabletext/react';
+import TrainingRegistration from './TrainingRegistration';
 
 interface TrainingContentProps {
   training: ITraining;
@@ -15,6 +16,9 @@ export default function TrainingContent({ training }: TrainingContentProps) {
       <h1 className="text-3xl font-bold mb-4">{training.title}</h1>
       <div className="prose max-w-none mb-8">
         {training.description && <PortableText value={training.description} />}
+      </div>
+      <div className="my-4">
+        <TrainingRegistration training={training} />
       </div>
 
       {/* Prerequisites */}

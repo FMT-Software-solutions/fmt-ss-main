@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { CustomTrainingRegistrationEmail } from '@/emails/CustomTrainingRegistrationEmail';
 import { createClient } from '@/lib/supabase/server';
-import { ICustomRegistrationFormData } from '@/types/training';
-import { z } from 'zod';
-import { Resend } from 'resend';
 import { client as sanityClient } from '@/sanity/lib/client';
 import { trainingBySlugWithLinksQuery } from '@/sanity/lib/queries';
-import { CustomTrainingRegistrationEmail } from '@/emails/CustomTrainingRegistrationEmail';
+import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
+import { z } from 'zod';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,11 +15,13 @@ const registerSchema = z.object({
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().min(10, 'Please enter a valid phone number'),
+  session: z.string().min(1, 'Please select a session time'),
   about: z.string().min(10, 'Please tell us a bit about yourself'),
   experience: z
     .array(z.string())
     .min(1, 'Please select at least one experience option'),
   expectations: z.string().min(20, 'Please share your expectations'),
+  paymentMethod: z.enum(['paystack', 'momo']).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -85,8 +86,10 @@ export async function POST(request: NextRequest) {
       last_name: validatedData.lastName,
       email: validatedData.email,
       phone: validatedData.phone,
-      status: 'confirmed' as const,
+      status: validatedData.paymentMethod === 'momo' ? 'pending' as const : 'confirmed' as const,
+      payment_method: validatedData.paymentMethod || null,
       details: {
+        session: validatedData.session,
         about: validatedData.about,
         experience: validatedData.experience,
         expectations: validatedData.expectations,
@@ -127,26 +130,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send confirmation email to user
-    try {
-      await resend.emails.send({
-        from: 'FMT Software Solutions <training@fmtsoftware.com>',
-        to: [validatedData.email],
-        subject: `Registration Confirmed: ${trainingData.title}`,
-        react: CustomTrainingRegistrationEmail({
-          firstName: validatedData.firstName,
-          training: trainingData,
-          registrationDetails: {
-            about: validatedData.about,
-            experience: validatedData.experience,
-            expectations: validatedData.expectations,
-          },
-        }),
-      });
+    // Send confirmation email to user only if registration is confirmed (not pending manual payment)
+    if (registrationData.status === 'confirmed') {
+      try {
+        await resend.emails.send({
+          from: 'FMT Software Solutions <training@fmtsoftware.com>',
+          to: [validatedData.email],
+          subject: `Registration Confirmed: ${trainingData.title}`,
+          react: CustomTrainingRegistrationEmail({
+            firstName: validatedData.firstName,
+            training: trainingData,
+            registrationDetails: {
+              session: validatedData.session,
+              about: validatedData.about,
+              experience: validatedData.experience,
+              expectations: validatedData.expectations,
+            },
+          }),
+        });
 
-    } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-      // Don't fail the registration if email fails
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the registration if email fails
+      }
     }
 
     // Send notification email to admin
@@ -161,6 +167,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Participant:</strong> ${validatedData.firstName} ${validatedData.lastName}</p>
           <p><strong>Email:</strong> ${validatedData.email}</p>
           <p><strong>Phone:</strong> ${validatedData.phone}</p>
+          <p><strong>Session:</strong> ${validatedData.session}</p>
           <p><strong>Registration ID:</strong> ${data.id}</p>
           <hr>
           <h3>About:</h3>

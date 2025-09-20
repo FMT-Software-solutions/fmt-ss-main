@@ -53,7 +53,7 @@ export default async function ThankYouPage({
               <CalendarIcon className="h-5 w-5 mr-2 mt-0.5 text-primary" />
               <span>
                 You will receive a confirmation email with all the training
-                details
+                details after confirmation
               </span>
             </li>
             <li className="flex items-start">
@@ -66,8 +66,8 @@ export default async function ThankYouPage({
               <li className="flex items-start">
                 <CalendarIcon className="h-5 w-5 mr-2 mt-0.5 text-primary" />
                 <span>
-                  You will receive the online access link before the training
-                  starts
+                  You will receive the online meeting link or be invited to the
+                  scheduled meetings
                 </span>
               </li>
             )}
