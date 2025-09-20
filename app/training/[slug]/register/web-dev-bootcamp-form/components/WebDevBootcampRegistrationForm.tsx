@@ -2,7 +2,6 @@
 
 import { PaystackButton } from '@/components/PaystackButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { issuesClient } from '@/services/issues/client';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,9 +23,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { issuesClient } from '@/services/issues/client';
 import { ITraining } from '@/types/training';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { tr } from 'date-fns/locale';
 import {
   AlertCircle,
   ArrowLeft,
@@ -37,7 +36,6 @@ import {
   Copy,
   CreditCard,
   FileText,
-  ImageIcon,
   Info,
   Loader2,
   Mail,
@@ -198,8 +196,9 @@ export default function WebDevBootcampRegistrationForm({
       }, 2000);
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Registration failed';
+
       // Log error to issues service
       await issuesClient.logValidationError(
         'form_submission',
@@ -209,11 +208,11 @@ export default function WebDevBootcampRegistrationForm({
           training_id: training._id,
           training_slug: training.slug.current,
           form_data: data,
-          payment_method: selectedPaymentMethod
+          payment_method: selectedPaymentMethod,
         },
         'WebDevBootcampRegistrationForm'
       );
-      
+
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

@@ -23,6 +23,7 @@ const registerSchema = z.object({
     .min(1, 'Please select at least one experience option'),
   expectations: z.string().min(20, 'Please share your expectations'),
   paymentMethod: z.enum(['paystack', 'momo']).optional(),
+  momoAccountName: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -121,6 +122,7 @@ export async function POST(request: NextRequest) {
         about: validatedData.about,
         experience: validatedData.experience,
         expectations: validatedData.expectations,
+        momo_account_name: validatedData.momoAccountName || null,
       },
     };
 
