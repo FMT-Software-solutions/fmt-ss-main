@@ -2,6 +2,7 @@
 
 import { PaystackButton } from '@/components/PaystackButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { issuesClient } from '@/services/issues/client';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -197,9 +198,23 @@ export default function WebDevBootcampRegistrationForm({
       }, 2000);
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Registration failed'
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      
+      // Log error to issues service
+      await issuesClient.logValidationError(
+        'form_submission',
+        errorMessage,
+        {
+          component: 'WebDevBootcampRegistrationForm',
+          training_id: training._id,
+          training_slug: training.slug.current,
+          form_data: data,
+          payment_method: selectedPaymentMethod
+        },
+        'WebDevBootcampRegistrationForm'
       );
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
       setIsProcessingPayment(false);

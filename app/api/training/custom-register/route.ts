@@ -5,6 +5,7 @@ import { trainingBySlugWithLinksQuery } from '@/sanity/lib/queries';
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
+import { issuesServer } from '@/services/issues/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -25,8 +26,9 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
 
     // Validate the request body
     const validatedData = registerSchema.parse(body);
@@ -44,6 +46,19 @@ export async function POST(request: NextRequest) {
 
     if (checkError && checkError.code !== 'PGRST116') {
       console.error('Error checking existing registration:', checkError);
+      
+      await issuesServer.logDatabaseError(
+        checkError.message || 'Error checking existing registration',
+        'check_existing_registration',
+        'custom_training_registrations',
+        undefined,
+        {
+          component: 'custom-training-register-api',
+          training_slug: validatedData.trainingSlug,
+          user_email: validatedData.email
+        }
+      );
+      
       return NextResponse.json(
         { message: 'Error checking registration status' },
         { status: 500 }
@@ -72,6 +87,19 @@ export async function POST(request: NextRequest) {
       }
     } catch (sanityError) {
       console.error('Error fetching training from Sanity:', sanityError);
+      
+      await issuesServer.logApiError(
+        sanityError instanceof Error ? sanityError.message : 'Error fetching training from Sanity',
+        '/api/training/custom-register',
+        'POST',
+        {
+          component: 'custom-training-register-api',
+          action: 'fetch_training_data',
+          training_slug: validatedData.trainingSlug,
+          training_id: validatedData.trainingId
+        }
+      );
+      
       return NextResponse.json(
         { message: 'Training not found' },
         { status: 404 }
@@ -105,6 +133,22 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error inserting registration:', error);
+      
+      await issuesServer.logDatabaseError(
+        error.message || 'Failed to save registration',
+        'save_registration',
+        'custom_training_registrations',
+        undefined,
+        {
+          component: 'custom-training-register-api',
+          training_slug: validatedData.trainingSlug,
+          training_id: validatedData.trainingId,
+          user_email: validatedData.email,
+          user_name: `${validatedData.firstName} ${validatedData.lastName}`,
+          payment_method: validatedData.paymentMethod
+        }
+      );
+      
       return NextResponse.json(
         { message: 'Failed to save registration. Please try again.' },
         { status: 500 }
@@ -150,9 +194,24 @@ export async function POST(request: NextRequest) {
         });
 
       } catch (emailError) {
-        console.error('Error sending confirmation email:', emailError);
-        // Don't fail the registration if email fails
-      }
+      console.error('Error sending confirmation email:', emailError);
+      
+      await issuesServer.logEmailError(
+        emailError instanceof Error ? emailError.message : 'Failed to send confirmation email',
+        'send_confirmation_email',
+        validatedData.email,
+        undefined,
+        undefined,
+        {
+          component: 'custom-training-register-api',
+          training_slug: validatedData.trainingSlug,
+          training_id: validatedData.trainingId,
+          registration_id: data.id
+        }
+      );
+      
+      // Don't fail the registration if email fails
+    }
     }
 
     // Send notification email to admin
@@ -183,6 +242,22 @@ export async function POST(request: NextRequest) {
       });
     } catch (adminEmailError) {
       console.error('Error sending admin notification:', adminEmailError);
+      
+      await issuesServer.logEmailError(
+        adminEmailError instanceof Error ? adminEmailError.message : 'Failed to send admin notification email',
+        'send_admin_notification_email',
+        'training@fmtsoftware.com',
+        undefined,
+        undefined,
+        {
+          component: 'custom-training-register-api',
+          training_slug: validatedData.trainingSlug,
+          training_id: validatedData.trainingId,
+          user_email: validatedData.email,
+          registration_id: data.id
+        }
+      );
+      
       // Don't fail the registration if admin email fails
     }
 
@@ -197,6 +272,17 @@ export async function POST(request: NextRequest) {
     console.error('Registration error:', error);
 
     if (error instanceof z.ZodError) {
+      await issuesServer.logApiError(
+        'Validation failed for custom training registration',
+        '/api/training/custom-register',
+        'POST',
+        {
+          component: 'custom-training-register-api',
+          request_body: body,
+          validation_errors: error.errors
+        }
+      );
+      
       return NextResponse.json(
         {
           message: 'Validation error',
@@ -208,6 +294,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    await issuesServer.logApiError(
+      error instanceof Error ? error.message : 'Unknown error in custom training registration',
+      '/api/training/custom-register',
+      'POST',
+      {
+        component: 'custom-training-register-api',
+        action: 'process_registration',
+        request_body: body
+      }
+    );
 
     return NextResponse.json(
       { message: 'Internal server error' },

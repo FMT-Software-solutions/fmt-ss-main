@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/browser';
 import { PaystackButton } from '@/components/PaystackButton';
+import { issuesClient } from '@/services/issues/client';
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -134,6 +135,20 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
       console.error('Registration error:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
+      
+      // Log error to issues service
+      await issuesClient.logValidationError(
+        'form_submission',
+        errorMessage,
+        {
+          component: 'RegistrationForm',
+          training_id: training._id,
+          training_slug: training.slug.current,
+          form_data: values
+        },
+        'RegistrationForm'
+      );
+      
       setRegistrationError(errorMessage);
       toast({
         title: 'Registration failed',
@@ -179,6 +194,21 @@ export default function RegistrationForm({ training }: RegistrationFormProps) {
       router.push(`/training/${training.slug.current}/thank-you`);
     } catch (error) {
       console.error('Payment error:', error);
+      
+      // Log payment error to issues service
+      await issuesClient.logPaymentError(
+        error instanceof Error ? error.message : 'Payment processing failed',
+        {
+          component: 'RegistrationForm',
+          training_id: training._id,
+          training_slug: training.slug.current,
+          registration_id: registrationData?.id,
+          payment_reference: reference?.reference,
+          amount: training.price
+        },
+        'payment_processing'
+      );
+      
       toast({
         title: 'Payment failed',
         description:

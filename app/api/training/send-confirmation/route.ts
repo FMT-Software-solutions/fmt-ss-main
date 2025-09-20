@@ -3,12 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 import { CustomTrainingRegistrationEmail } from '@/emails/CustomTrainingRegistrationEmail';
 import { TrainingRegistrationEmail } from '@/emails/TrainingRegistrationEmail';
+import { issuesServer } from '@/services/issues/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
+  let registrationId: string = '';
+  let email: string = '';
+  let registrationType: string = '';
+  
   try {
-    const { registrationId, email, registrationType } = await request.json();
+    ({ registrationId, email, registrationType } = await request.json());
 
     if (!registrationId || !email || !registrationType) {
       return NextResponse.json(
@@ -31,6 +36,19 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (customError || !customReg) {
+        await issuesServer.logDatabaseError(
+          customError?.message || 'Custom registration not found',
+          'fetch_custom_registration',
+          'custom_training_registrations',
+          undefined,
+          {
+            component: 'send-confirmation-api',
+            registration_id: registrationId,
+            registration_type: registrationType,
+            user_email: email
+          }
+        );
+        
         return NextResponse.json(
           { error: 'Registration not found' },
           { status: 404 }
@@ -63,6 +81,19 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (regularError || !regularReg) {
+        await issuesServer.logDatabaseError(
+          regularError?.message || 'Regular registration not found',
+          'fetch_regular_registration',
+          'training_registrations',
+          undefined,
+          {
+            component: 'send-confirmation-api',
+            registration_id: registrationId,
+            registration_type: registrationType,
+            user_email: email
+          }
+        );
+        
         return NextResponse.json(
           { error: 'Registration not found' },
           { status: 404 }
@@ -83,6 +114,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (!trainingData) {
+      await issuesServer.logApiError(
+        'Training data not found in Sanity',
+        '/api/training/send-confirmation',
+        'POST',
+        {
+          registration_id: registrationId,
+          registration_type: registrationType,
+          email: email
+        },
+        undefined,
+        404
+      );
+      
       return NextResponse.json(
         { error: 'Training not found' },
         { status: 404 }
@@ -110,6 +154,20 @@ export async function POST(request: NextRequest) {
 
     if (emailError) {
       console.error('Email sending error:', emailError);
+      
+      await issuesServer.logEmailError(
+        emailError instanceof Error ? emailError.message : 'Failed to send confirmation email',
+        'registration_confirmation',
+        email,
+        undefined,
+        undefined,
+        {
+          component: 'send-confirmation-api',
+          registration_id: registrationId,
+          registration_type: registrationType,
+          training_title: trainingData?.title
+        }
+      );
       return NextResponse.json(
         { error: 'Failed to send email' },
         { status: 500 }
@@ -126,6 +184,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error sending confirmation email:', error);
+    
+    await issuesServer.logApiError(
+      error instanceof Error ? error.message : 'Unknown error sending confirmation',
+      '/api/training/send-confirmation',
+      'POST',
+      {
+        registration_id: registrationId,
+        registration_type: registrationType,
+        email: email
+      },
+      undefined,
+      500
+    );
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

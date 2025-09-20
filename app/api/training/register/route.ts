@@ -3,13 +3,15 @@ import { Resend } from 'resend';
 import TrainingRegistrationEmail from '@/emails/TrainingRegistrationEmail';
 import { client } from '@/sanity/lib/client';
 import { trainingBySlugWithLinksQuery } from '@/sanity/lib/queries';
+import { issuesServer } from '@/services/issues/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+  let body: any;
   try {
     const supabase = await createClient();
-    const body = await request.json();
+    body = await request.json();
     const { firstName, lastName, email, phone, company, message, training } =
       body;
 
@@ -64,6 +66,21 @@ export async function POST(request: Request) {
 
       if (dbError) {
         console.error('Error saving registration to database:', dbError);
+        
+        await issuesServer.logDatabaseError(
+          dbError.message || 'Failed to save registration',
+          'save_paid_registration',
+          'training_registrations',
+          undefined,
+          {
+            component: 'training-register-api',
+            training_id: training._id,
+            training_slug: training.slug.current,
+            user_email: email,
+            user_name: `${firstName} ${lastName}`
+          }
+        );
+        
         return Response.json(
           { error: 'Failed to save registration' },
           { status: 500 }
@@ -99,6 +116,21 @@ export async function POST(request: Request) {
 
     if (dbError) {
       console.error('Error saving registration to database:', dbError);
+      
+      await issuesServer.logDatabaseError(
+        dbError.message || 'Failed to save registration',
+        'save_free_registration',
+        'training_registrations',
+        undefined,
+        {
+          component: 'training-register-api',
+          training_id: training._id,
+          training_slug: training.slug.current,
+          user_email: email,
+          user_name: `${firstName} ${lastName}`
+        }
+      );
+      
       return Response.json(
         { error: 'Failed to save registration' },
         { status: 500 }
@@ -118,6 +150,22 @@ export async function POST(request: Request) {
 
     if (emailError) {
       console.error('Error sending confirmation email:', emailError);
+      
+      await issuesServer.logEmailError(
+        emailError.message || 'Failed to send confirmation email',
+        'registration_confirmation',
+        email,
+        undefined,
+        undefined,
+        {
+          component: 'training-register-api',
+          training_id: training._id,
+          training_slug: training.slug.current,
+          user_name: `${firstName} ${lastName}`,
+          registration_id: data.id
+        }
+      );
+      
       // We don't want to fail the registration if just the email fails
     }
 
@@ -148,6 +196,16 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error processing registration:', error);
+    
+    await issuesServer.logApiError(
+      error instanceof Error ? error.message : 'Unknown error processing registration',
+      '/api/training/register',
+      'POST',
+      body,
+      undefined,
+      500
+    );
+    
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
