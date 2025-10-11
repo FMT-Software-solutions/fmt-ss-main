@@ -90,6 +90,10 @@ export async function POST(request: NextRequest) {
 
     const result = await s3Client.send(uploadCommand);
 
+    // Construct the file URL using your own API proxy
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const fileUrl = `${baseUrl}/api/files/${bucketName}/${finalFileName}`;
+
     // Return success response
     return NextResponse.json(
       {
@@ -100,6 +104,8 @@ export async function POST(request: NextRequest) {
         etag: result.ETag,
         size: buffer.length,
         contentType: file.type,
+        url: fileUrl, // Direct URL to access the file through your API
+        downloadUrl: fileUrl, // Same URL can be used for download
       },
       { status: 200, headers: corsHeaders }
     );
