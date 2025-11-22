@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import HeroSection from './HeroSection';
 // import FeaturedApps from './FeaturedApps';
-import FeaturesSection from './FeaturesSection';
+import PremiumFeaturedApps from './PremiumFeaturedApps';
+// import FeaturesSection from './FeaturesSection';
 import NewsletterSection from './NewsletterSection';
 // import ProjectsSection from './ProjectsSection';
 // import { projects } from '@/consts/projects';
@@ -26,11 +27,12 @@ export const metadata: Metadata = {
     'custom software development',
     'Ghana tech company',
     'software consulting',
-    'enterprise software'
+    'enterprise software',
   ],
   openGraph: {
     title: 'FMT Software Solutions - Premium Software & Training',
-    description: 'Leading software development company in Ghana. We build premium web, desktop, and mobile applications for modern businesses.',
+    description:
+      'Leading software development company in Ghana. We build premium web, desktop, and mobile applications for modern businesses.',
     url: 'https://fmtsoftware.com',
     images: [
       {
@@ -44,7 +46,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'FMT Software Solutions - Premium Software & Training',
-    description: 'Leading software development company in Ghana. We build premium web, desktop, and mobile applications.',
+    description:
+      'Leading software development company in Ghana. We build premium web, desktop, and mobile applications.',
     images: ['https://fmtsoftware.com/images/fmt-bg.png'],
   },
   alternates: {
@@ -55,44 +58,45 @@ export const metadata: Metadata = {
 // This is now a Server Component in React 19
 export default function Home() {
   const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "FMT Software Solutions",
-    "description": "Premium software solutions for modern businesses. Web, desktop, and mobile applications.",
-    "url": "https://fmtsoftware.com",
-    "logo": "https://fmtsoftware.com/fmt-logo.png",
-    "foundingDate": "2020",
-    "foundingLocation": {
-      "@type": "Place",
-      "name": "Ghana"
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'FMT Software Solutions',
+    description:
+      'Premium software solutions for modern businesses. Web, desktop, and mobile applications.',
+    url: 'https://fmtsoftware.com',
+    logo: 'https://fmtsoftware.com/fmt-logo.png',
+    foundingDate: '2020',
+    foundingLocation: {
+      '@type': 'Place',
+      name: 'Ghana',
     },
-    "areaServed": [
+    areaServed: [
       {
-        "@type": "Country",
-        "name": "Ghana"
+        '@type': 'Country',
+        name: 'Ghana',
       },
       {
-        "@type": "Place",
-        "name": "Global"
-      }
+        '@type': 'Place',
+        name: 'Global',
+      },
     ],
-    "serviceType": [
-      "Software Development",
-      "Web Application Development",
-      "Desktop Application Development",
-      "Mobile Application Development",
-      "Software Training",
-      "Software Consulting"
+    serviceType: [
+      'Software Development',
+      'Web Application Development',
+      'Desktop Application Development',
+      'Mobile Application Development',
+      'Software Training',
+      'Software Consulting',
     ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "Customer Service",
-      "url": "https://fmtsoftware.com/contact"
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'Customer Service',
+      url: 'https://fmtsoftware.com/contact',
     },
-    "sameAs": [
-      "https://twitter.com/fmt_software",
-      "https://linkedin.com/company/fmtsoftware"
-    ]
+    sameAs: [
+      'https://twitter.com/fmt_software',
+      'https://linkedin.com/company/fmtsoftware',
+    ],
   };
 
   return (
@@ -104,6 +108,7 @@ export default function Home() {
       <main className="flex min-h-screen flex-col">
         <HeroSection />
         <StatsSection />
+        <PremiumFeaturedApps />
         {/* <FeaturedApps /> */}
         {/* <ProjectsSection projects={projects} /> */}
         <WebAppsSection />

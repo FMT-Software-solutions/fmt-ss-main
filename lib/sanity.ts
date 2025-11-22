@@ -10,6 +10,7 @@ import {
   featuredTrainingsQuery,
   freeAppBySlugQuery,
   premiumAppBySlugQuery,
+  premiumAppWithDownloadUrlsQuery,
   trainingBySlugQuery,
 } from '@/sanity/lib/queries';
 import { IFreeApp, IFreeAppListItem } from '@/types/free-app';
@@ -84,6 +85,30 @@ export async function getPremiumAppBySlug(
     };
   } catch (error) {
     console.error(`Error fetching premium app with slug ${slug}:`, error);
+    return null;
+  }
+}
+
+// Function to fetch a premium app by slug with full download URLs
+export async function getPremiumAppWithDownloadsBySlug(
+  slug: string
+): Promise<IPremiumApp | null> {
+  try {
+    const app = await client.fetch(premiumAppWithDownloadUrlsQuery, { slug });
+
+    if (!app) return null;
+
+    return {
+      ...app,
+      requirements: app.systemRequirements || {
+        os: [],
+        processor: '',
+        memory: '',
+        storage: '',
+      },
+    };
+  } catch (error) {
+    console.error(`Error fetching premium app (downloads) with slug ${slug}:`, error);
     return null;
   }
 }

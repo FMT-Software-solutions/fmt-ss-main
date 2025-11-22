@@ -40,12 +40,17 @@ export async function GET(
       );
     }
 
-    const body = await response.Body.transformToByteArray();
-    
-    return new NextResponse(body, {
+    const bytes = await response.Body.transformToByteArray();
+    const buffer = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength
+    ) as ArrayBuffer;
+    const blob = new Blob([buffer], { type: response.ContentType || 'application/octet-stream' });
+
+    return new NextResponse(blob, {
       headers: {
-        'Content-Type': response.ContentType || 'application/octet-stream',
-        'Content-Length': response.ContentLength?.toString() || '',
+        'Content-Type': blob.type || 'application/octet-stream',
+        'Content-Length': String(blob.size),
         'Cache-Control': 'public, max-age=31536000',
       },
     });
