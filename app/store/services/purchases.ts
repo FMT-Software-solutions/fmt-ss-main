@@ -6,7 +6,8 @@ export async function createPurchaseRecord(
   items: CartItem[],
   total: number,
   payment_reference: string,
-  isExistingOrg: boolean
+  isExistingOrg: boolean,
+  status: 'pending' | 'completed' | 'failed' = 'completed'
 ) {
   const supabase = createClient();
   let organization_id: string;
@@ -67,25 +68,25 @@ export async function createPurchaseRecord(
     // update organization details if edited
     const updates: any = {};
 
-    if(organizationDetails.organizationName !== org.name) {
+    if (organizationDetails.organizationName !== org.name) {
       updates.name = organizationDetails.organizationName;
     }
 
-    if(organizationDetails.phoneNumber !== org.phone) {
+    if (organizationDetails.phoneNumber !== org.phone) {
       updates.phone = organizationDetails.phoneNumber;
     }
 
-    if(organizationDetails.organizationEmail !== org.email) {
+    if (organizationDetails.organizationEmail !== org.email) {
       updates.email = organizationDetails.organizationEmail;
     }
 
-    if(Object.keys(updates).length > 0) {
+    if (Object.keys(updates).length > 0) {
       const { error: updateError } = await supabase
         .from('organizations')
         .update(updates)
         .eq('id', organization_id);
 
-      if(updateError) {
+      if (updateError) {
         // throw new Error(`Error updating organization: ${updateError.message}`);
         console.error('Error updating organization:', updateError);
       }
@@ -133,7 +134,7 @@ export async function createPurchaseRecord(
     organization_id,
     payment_reference,
     amount: total,
-    status: 'completed',
+    status,
     items: items.map((item) => ({
       productId: item.productId,
       quantity: item.quantity,
@@ -150,7 +151,7 @@ export async function createPurchaseRecord(
     organization_id,
     payment_reference,
     amount: total,
-    status: 'completed',
+    status,
   };
 }
 

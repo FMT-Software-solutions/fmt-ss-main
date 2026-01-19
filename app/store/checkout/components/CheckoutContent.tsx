@@ -273,16 +273,33 @@ export default function CheckoutContent() {
     const formData = form.getValues();
 
     try {
-      setIsProcessing(true);
+      if (reference?.method === 'hubtel') {
+        toast.success(
+          'Payment received. Your confirmation email will arrive shortly.',
+          { duration: 5000 }
+        );
+        clearCart();
+        router.push('/store/checkout/success');
+        setIsProcessing(false);
+        return;
+      }
 
-      // Create purchase record with billing details
+      setIsProcessing(true);
+      const purchaseStatus =
+        reference?.status === 'pending' ? 'pending' : 'completed';
+
       const result = await createPurchaseRecord(
         formData.billingDetails,
         items,
         checkoutState.finalTotal,
         reference.reference,
-        isExistingOrg
+        isExistingOrg,
+        purchaseStatus
       );
+
+      if (purchaseStatus === 'pending') {
+        return;
+      }
 
       // Call app provisioning API for each app
 
@@ -401,6 +418,14 @@ export default function CheckoutContent() {
     setIsProcessing(false);
   };
 
+  const hubtelCheckoutPayload = {
+    billingDetails: form.getValues('billingDetails'),
+    items,
+    total: checkoutState.finalTotal,
+    isExistingOrg,
+    appProvisioningDetails: form.getValues('appProvisioningDetails'),
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -448,11 +473,13 @@ export default function CheckoutContent() {
 
             <OrderSummary
               items={items}
-              total={checkoutState.finalTotal}
+              // total={checkoutState.finalTotal}
+              total={1}
               subtotal={checkoutState.subtotal}
               discountAmount={checkoutState.discountAmount}
               appliedDiscount={checkoutState.appliedDiscount}
               email={organizationEmail}
+              hubtelCheckoutPayload={hubtelCheckoutPayload}
               metadata={{
                 name: form.getValues('billingDetails.organizationName'),
                 phone: form.getValues('billingDetails.phoneNumber') || '',

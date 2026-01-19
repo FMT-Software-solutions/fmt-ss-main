@@ -61,6 +61,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
     "framer-motion": "^11.0.8",
+    "@hubteljs/checkout": "^1.0.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "media-chrome": "^4.12.0",
