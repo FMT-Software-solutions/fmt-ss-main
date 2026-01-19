@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -127,9 +128,9 @@ function UnsubscribeContent() {
       )}
 
       <div className="mt-8">
-        <a href="/" className="text-primary hover:underline">
+        <Link href="/" className="text-primary hover:underline">
           Return to Homepage
-        </a>
+        </Link>
       </div>
     </div>
   );
