@@ -12,6 +12,7 @@
     "@aws-sdk/client-s3": "^3.908.0",
     "@aws-sdk/s3-request-presigner": "^3.908.0",
     "@hookform/resolvers": "^3.9.0",
+    "@hubteljs/checkout": "^1.0.0",
     "@portabletext/react": "^3.2.1",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -49,10 +50,11 @@
     "@sanity/visual-editing": "^5.1.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.1",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20.11.25",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "autoprefixer": "^10.4.18",
+    "autoprefixer": "^10.4.23",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -61,7 +63,6 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "framer-motion": "^11.0.8",
-    "@hubteljs/checkout": "^1.0.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "media-chrome": "^4.12.0",
@@ -82,7 +83,7 @@
     "sonner": "^1.5.0",
     "swiper": "^11.2.6",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.2",
     "vaul": "^0.9.9",
@@ -111,7 +112,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
-    "@typescript-eslint/parser": "^8.26.1",
-    "@types/lodash.debounce": "^4.0.9"
+    "@types/lodash.debounce": "^4.0.9",
+    "@typescript-eslint/parser": "^8.26.1"
   }
 }

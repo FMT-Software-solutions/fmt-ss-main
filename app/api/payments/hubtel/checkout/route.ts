@@ -70,10 +70,7 @@ export async function POST(request: Request) {
         ? `https://${request.headers.get('x-forwarded-host')}`
         : `http://${request.headers.get('host')}`);
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      origin;
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
     const callbackUrl = `${baseUrl.replace(/\/$/, '')}/api/payments/hubtel/callback`;
     const basicAuth = Buffer.from(`${apiId}:${apiKey}`).toString('base64');
 
