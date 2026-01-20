@@ -5,14 +5,21 @@ import { AdminHeader } from '../components/AdminHeader';
 import { StatsCard } from '../components/StatsCard';
 import { DataTable, Column, StatusBadge } from '../components/DataTable';
 import { FilterBar } from '../components/FilterBar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  LineChart,
   Line,
-  AreaChart,
   Area,
   BarChart,
   Bar,
@@ -48,7 +55,7 @@ const salesData = [
     organization: 'Acme Corporation',
     customer: 'John Smith',
     amount: 149.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'Credit Card',
     date: '2024-01-15T10:30:00Z',
@@ -64,7 +71,7 @@ const salesData = [
     organization: 'TechStart Inc',
     customer: 'Sarah Johnson',
     amount: 79.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'PayPal',
     date: '2024-01-14T15:45:00Z',
@@ -80,7 +87,7 @@ const salesData = [
     organization: 'Global Solutions',
     customer: 'Mike Davis',
     amount: 199.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Pending',
     paymentMethod: 'Bank Transfer',
     date: '2024-01-13T09:20:00Z',
@@ -96,7 +103,7 @@ const salesData = [
     organization: 'StartupXYZ',
     customer: 'Emily Chen',
     amount: 29.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'Credit Card',
     date: '2024-01-12T14:10:00Z',
@@ -112,7 +119,7 @@ const salesData = [
     organization: 'Enterprise Corp',
     customer: 'Robert Wilson',
     amount: 299.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Failed',
     paymentMethod: 'Credit Card',
     date: '2024-01-11T11:30:00Z',
@@ -128,7 +135,7 @@ const salesData = [
     organization: 'Innovation Labs',
     customer: 'Lisa Anderson',
     amount: 59.99,
-    currency: 'USD',
+    currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'PayPal',
     date: '2024-01-10T16:45:00Z',
@@ -165,21 +172,30 @@ const paymentMethodData = [
 export default function SalesPage() {
   const [filteredData, setFilteredData] = useState(salesData);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [hubtelReference, setHubtelReference] = useState('');
+  const [hubtelStatus, setHubtelStatus] = useState<any | null>(null);
+  const [hubtelError, setHubtelError] = useState<string | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   // Calculate stats
   const totalRevenue = salesData
-    .filter(sale => sale.status === 'Completed')
+    .filter((sale) => sale.status === 'Completed')
     .reduce((sum, sale) => sum + sale.amount, 0);
-  
+
   const totalTransactions = salesData.length;
-  const completedTransactions = salesData.filter(sale => sale.status === 'Completed').length;
-  const pendingTransactions = salesData.filter(sale => sale.status === 'Pending').length;
-  const averageOrderValue = completedTransactions > 0 ? totalRevenue / completedTransactions : 0;
+  const completedTransactions = salesData.filter(
+    (sale) => sale.status === 'Completed'
+  ).length;
+  const pendingTransactions = salesData.filter(
+    (sale) => sale.status === 'Pending'
+  ).length;
+  const averageOrderValue =
+    completedTransactions > 0 ? totalRevenue / completedTransactions : 0;
 
   const statsData = [
     {
       title: 'Total Revenue',
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: `GHS${totalRevenue.toLocaleString()}`,
       description: 'All time revenue',
       icon: DollarSign,
       trend: { value: 12.5, label: 'from last month', isPositive: true },
@@ -203,7 +219,7 @@ export default function SalesPage() {
     },
     {
       title: 'Average Order Value',
-      value: `$${averageOrderValue.toFixed(2)}`,
+      value: `GHS${averageOrderValue.toFixed(2)}`,
       description: 'Per transaction',
       icon: TrendingUp,
       trend: { value: 5.7, label: 'from last month', isPositive: true },
@@ -216,43 +232,88 @@ export default function SalesPage() {
       key: 'app',
       label: 'App',
       type: 'select' as const,
-      options: Array.from(new Set(salesData.map(sale => sale.app))).map(app => ({ label: app, value: app })),
+      options: Array.from(
+        new Set(salesData.map((sale) => sale.app))
+      ).map((app) => ({ label: app, value: app })),
     },
     {
       key: 'status',
       label: 'Status',
       type: 'select' as const,
-      options: Array.from(new Set(salesData.map(sale => sale.status))).map(status => ({ label: status, value: status })),
+      options: Array.from(
+        new Set(salesData.map((sale) => sale.status))
+      ).map((status) => ({ label: status, value: status })),
     },
     {
       key: 'paymentMethod',
       label: 'Payment Method',
       type: 'select' as const,
-      options: Array.from(new Set(salesData.map(sale => sale.paymentMethod))).map(method => ({ label: method, value: method })),
+      options: Array.from(
+        new Set(salesData.map((sale) => sale.paymentMethod))
+      ).map((method) => ({ label: method, value: method })),
     },
     {
       key: 'region',
       label: 'Region',
       type: 'select' as const,
-      options: Array.from(new Set(salesData.map(sale => sale.region))).map(region => ({ label: region, value: region })),
+      options: Array.from(
+        new Set(salesData.map((sale) => sale.region))
+      ).map((region) => ({ label: region, value: region })),
     },
   ];
 
   const handleFilter = (newFilters: Record<string, any>) => {
     setFilters(newFilters);
-    
+
     let filtered = salesData;
-    
+
     // Apply filters
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value) {
-        filtered = filtered.filter(sale => 
-          sale[key as keyof typeof sale]?.toString().toLowerCase().includes(value.toLowerCase())
+        filtered = filtered.filter((sale) =>
+          sale[key as keyof typeof sale]
+            ?.toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
         );
       }
     });
-    
+
     setFilteredData(filtered);
+  };
+
+  const handleHubtelStatusCheck = async () => {
+    const reference = hubtelReference.trim();
+    if (!reference) {
+      setHubtelError('Client reference is required.');
+      setHubtelStatus(null);
+      return;
+    }
+
+    setIsCheckingStatus(true);
+    setHubtelError(null);
+    setHubtelStatus(null);
+    try {
+      const response = await fetch('/api/payments/hubtel/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clientReference: reference }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setHubtelError(result?.error || 'Failed to fetch status.');
+      } else {
+        setHubtelStatus(result);
+      }
+    } catch (error) {
+      setHubtelError(
+        error instanceof Error ? error.message : 'Failed to fetch status.'
+      );
+    } finally {
+      setIsCheckingStatus(false);
+    }
   };
 
   const salesColumns: Column<typeof salesData[0]>[] = [
@@ -315,7 +376,9 @@ export default function SalesPage() {
       render: (value) => (
         <div className="text-sm">
           <div>{new Date(value).toLocaleDateString()}</div>
-          <div className="text-muted-foreground">{new Date(value).toLocaleTimeString()}</div>
+          <div className="text-muted-foreground">
+            {new Date(value).toLocaleTimeString()}
+          </div>
         </div>
       ),
     },
@@ -344,160 +407,219 @@ export default function SalesPage() {
         }}
       />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statsData.map((stat, index) => (
-          <StatsCard key={index} {...stat} />
-        ))}
-      </div>
+      <Tabs defaultValue="sales" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="sales">Sales</TabsTrigger>
+          <TabsTrigger value="status">Status Check</TabsTrigger>
+        </TabsList>
+        <TabsContent value="sales" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {statsData.map((stat, index) => (
+              <StatsCard key={index} {...stat} />
+            ))}
+          </div>
 
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
-            <CardDescription>Monthly revenue and transaction count</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={revenueChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8884d8"
-                  fill="#8884d8"
-                  fillOpacity={0.3}
-                  name="Revenue ($)"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="transactions"
-                  stroke="#82ca9d"
-                  strokeWidth={2}
-                  name="Transactions"
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Revenue Trend</CardTitle>
+                <CardDescription>
+                  Monthly revenue and transaction count
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={revenueChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Area
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#8884d8"
+                      fill="#8884d8"
+                      fillOpacity={0.3}
+                      name="Revenue ($)"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="transactions"
+                      stroke="#82ca9d"
+                      strokeWidth={2}
+                      name="Transactions"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue by App</CardTitle>
-            <CardDescription>Distribution of revenue</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={appRevenueData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {appRevenueData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue by App</CardTitle>
+                <CardDescription>Distribution of revenue</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={appRevenueData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {appRevenueData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: any) => [
+                        `$${value.toLocaleString()}`,
+                        'Revenue',
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-4 space-y-2">
+                  {appRevenueData.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">
+                        ${item.value.toLocaleString()}
+                      </span>
+                    </div>
                   ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Revenue']} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-4 space-y-2">
-              {appRevenueData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="font-medium">${item.value.toLocaleString()}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Payment Methods Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>Distribution of payment methods used</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={paymentMethodData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value: any) => [`${value}%`, 'Usage']} />
-                <Bar dataKey="value" fill="#8884d8" minPointSize={5} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="space-y-4">
-              {paymentMethodData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="font-medium">{item.value}%</span>
-                </div>
-              ))}
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Filters and Data Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-          <CardDescription>Detailed view of all sales transactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FilterBar
-            onFilter={handleFilter}
-            filters={filterOptions}
-            searchPlaceholder="Search transactions..."
-          />
-          
-          <div className="mt-6">
-            <DataTable
-              data={filteredData}
-              columns={salesColumns}
-              searchable={false}
-              exportable={true}
-              actions={(sale) => (
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <FileText className="h-4 w-4" />
-                  </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Methods</CardTitle>
+              <CardDescription>
+                Distribution of payment methods used
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={paymentMethodData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: any) => [`${value}%`, 'Usage']} />
+                    <Bar dataKey="value" fill="#8884d8" minPointSize={5} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {paymentMethodData.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">{item.value}%</span>
+                    </div>
+                  ))}
                 </div>
-              )}
-            />
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction History</CardTitle>
+              <CardDescription>
+                Detailed view of all sales transactions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FilterBar
+                onFilter={handleFilter}
+                filters={filterOptions}
+                searchPlaceholder="Search transactions..."
+              />
+
+              <div className="mt-6">
+                <DataTable
+                  data={filteredData}
+                  columns={salesColumns}
+                  searchable={false}
+                  exportable={true}
+                  actions={(sale) => (
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="status">
+          <Card>
+            <CardHeader>
+              <CardTitle>Hubtel Status Check</CardTitle>
+              <CardDescription>
+                Lookup payment status by client reference
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4 md:flex-row md:items-end">
+                <div className="w-full space-y-2">
+                  <Label htmlFor="hubtel-client-reference">
+                    Client Reference
+                  </Label>
+                  <Input
+                    id="hubtel-client-reference"
+                    value={hubtelReference}
+                    onChange={(event) => setHubtelReference(event.target.value)}
+                    placeholder="Enter client reference"
+                  />
+                </div>
+                <Button
+                  onClick={handleHubtelStatusCheck}
+                  disabled={isCheckingStatus}
+                >
+                  {isCheckingStatus ? 'Checking...' : 'Check Status'}
+                </Button>
+              </div>
+              {hubtelError ? (
+                <div className="mt-4 text-sm text-destructive">{hubtelError}</div>
+              ) : null}
+              {hubtelStatus ? (
+                <pre className="mt-4 max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
+                  {JSON.stringify(hubtelStatus, null, 2)}
+                </pre>
+              ) : null}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

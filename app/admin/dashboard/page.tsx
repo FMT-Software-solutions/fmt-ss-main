@@ -3,7 +3,13 @@
 import { AdminHeader } from '../components/AdminHeader';
 import { StatsCard } from '../components/StatsCard';
 import { DataTable, Column } from '../components/DataTable';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +48,7 @@ const statsData = [
   },
   {
     title: 'Total Sales',
-    value: '$45,231',
+    value: 'GHS45,231',
     description: 'Revenue this month',
     icon: DollarSign,
     trend: { value: 8.2, label: 'from last month', isPositive: true },
@@ -115,7 +121,7 @@ const topApps = [
     name: 'TaskManager Pro',
     type: 'Desktop',
     downloads: 2543,
-    revenue: '$12,450',
+    revenue: 'GHS12,450',
     rating: 4.8,
     status: 'Active',
   },
@@ -124,7 +130,7 @@ const topApps = [
     name: 'Analytics Dashboard',
     type: 'Web',
     downloads: 1876,
-    revenue: '$8,920',
+    revenue: 'GHS8,920',
     rating: 4.6,
     status: 'Active',
   },
@@ -133,7 +139,7 @@ const topApps = [
     name: 'Mobile Sync',
     type: 'Mobile',
     downloads: 1432,
-    revenue: '$6,780',
+    revenue: 'GHS6,780',
     rating: 4.4,
     status: 'Active',
   },
@@ -142,7 +148,7 @@ const topApps = [
     name: 'DataSync Tool',
     type: 'Desktop',
     downloads: 987,
-    revenue: '$4,560',
+    revenue: 'GHS4,560',
     rating: 4.2,
     status: 'Active',
   },
@@ -189,7 +195,11 @@ const activityColumns: Column<typeof recentActivity[0]>[] = [
         training: 'bg-yellow-100 text-yellow-800',
       };
       return (
-        <Badge className={colors[value as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>
+        <Badge
+          className={
+            colors[value as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+          }
+        >
           {value}
         </Badge>
       );
@@ -305,7 +315,10 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
             <div className="mt-4 space-y-2">
               {appTypeData.map((item) => (
-                <div key={item.name} className="flex items-center justify-between text-sm">
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between text-sm"
+                >
                   <div className="flex items-center gap-2">
                     <div
                       className="h-3 w-3 rounded-full"
@@ -327,12 +340,17 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest actions across your applications</CardDescription>
+            <CardDescription>
+              Latest actions across your applications
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentActivity.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg border">
+                <div
+                  key={activity.id}
+                  className="flex items-center gap-4 p-3 rounded-lg border"
+                >
                   <div className="flex-1">
                     <p className="text-sm font-medium">{activity.action}</p>
                     <p className="text-xs text-muted-foreground">

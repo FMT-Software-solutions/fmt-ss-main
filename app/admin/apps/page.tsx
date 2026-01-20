@@ -46,7 +46,7 @@ const appsData = [
     version: '2.1.0',
     sales: 1250,
     downloads: 15420,
-    revenue: '$18,750',
+    revenue: 'GHS18,750',
     lastUpdated: '2024-01-15',
     rating: 4.8,
     category: 'Productivity',
@@ -59,7 +59,7 @@ const appsData = [
     version: '1.5.2',
     sales: 890,
     downloads: 12340,
-    revenue: '$13,350',
+    revenue: 'GHS13,350',
     lastUpdated: '2024-01-12',
     rating: 4.6,
     category: 'Analytics',
@@ -72,7 +72,7 @@ const appsData = [
     version: '3.0.1',
     sales: 2100,
     downloads: 28900,
-    revenue: '$31,500',
+    revenue: 'GHS31,500',
     lastUpdated: '2024-01-10',
     rating: 4.4,
     category: 'Utilities',
@@ -85,7 +85,7 @@ const appsData = [
     version: '1.0.0-beta',
     sales: 0,
     downloads: 0,
-    revenue: '$0',
+    revenue: 'GHS0',
     lastUpdated: '2024-01-08',
     rating: 0,
     category: 'Development',
@@ -98,7 +98,7 @@ const appsData = [
     version: '2.3.1',
     sales: 450,
     downloads: 5670,
-    revenue: '$6,750',
+    revenue: 'GHS6,750',
     lastUpdated: '2023-12-20',
     rating: 4.2,
     category: 'Business',
@@ -111,7 +111,7 @@ const appsData = [
     version: '1.8.0',
     sales: 780,
     downloads: 9850,
-    revenue: '$11,700',
+    revenue: 'GHS11,700',
     lastUpdated: '2024-01-05',
     rating: 4.7,
     category: 'Utilities',
@@ -124,7 +124,7 @@ const appsData = [
     version: '2.2.0',
     sales: 1680,
     downloads: 22100,
-    revenue: '$25,200',
+    revenue: 'GHS25,200',
     lastUpdated: '2024-01-14',
     rating: 4.5,
     category: 'Communication',
@@ -137,7 +137,7 @@ const appsData = [
     version: '1.4.3',
     sales: 920,
     downloads: 11200,
-    revenue: '$13,800',
+    revenue: 'GHS13,800',
     lastUpdated: '2024-01-11',
     rating: 4.3,
     category: 'Finance',
@@ -154,21 +154,28 @@ const statsData = [
   },
   {
     title: 'Active Apps',
-    value: appsData.filter(app => app.status === 'Active').length.toString(),
+    value: appsData.filter((app) => app.status === 'Active').length.toString(),
     description: 'Currently active',
     icon: Package,
     color: 'green' as const,
   },
   {
     title: 'Total Downloads',
-    value: appsData.reduce((sum, app) => sum + app.downloads, 0).toLocaleString(),
+    value: appsData
+      .reduce((sum, app) => sum + app.downloads, 0)
+      .toLocaleString(),
     description: 'All time downloads',
     icon: Download,
     color: 'purple' as const,
   },
   {
     title: 'Total Revenue',
-    value: `$${appsData.reduce((sum, app) => sum + parseInt(app.revenue.replace(/[$,]/g, '')), 0).toLocaleString()}`,
+    value: `GHS${appsData
+      .reduce(
+        (sum, app) => sum + parseInt(app.revenue.replace(/[GHS,]/g, '')),
+        0
+      )
+      .toLocaleString()}`,
     description: 'All time revenue',
     icon: Package,
     color: 'yellow' as const,
@@ -216,26 +223,31 @@ export default function AppsManagement() {
   const router = useRouter();
   const [filteredData, setFilteredData] = useState(appsData);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<typeof appsData[0] | null>(null);
+  const [selectedApp, setSelectedApp] = useState<typeof appsData[0] | null>(
+    null
+  );
 
   const handleSearch = (term: string) => {
-    const filtered = appsData.filter(app =>
-      app.name.toLowerCase().includes(term.toLowerCase()) ||
-      app.type.toLowerCase().includes(term.toLowerCase()) ||
-      app.category.toLowerCase().includes(term.toLowerCase())
+    const filtered = appsData.filter(
+      (app) =>
+        app.name.toLowerCase().includes(term.toLowerCase()) ||
+        app.type.toLowerCase().includes(term.toLowerCase()) ||
+        app.category.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredData(filtered);
   };
 
   const handleFilter = (filters: Record<string, any>) => {
     let filtered = [...appsData];
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
-        filtered = filtered.filter(app => app[key as keyof typeof app] === value);
+        filtered = filtered.filter(
+          (app) => app[key as keyof typeof app] === value
+        );
       }
     });
-    
+
     setFilteredData(filtered);
   };
 
@@ -318,7 +330,9 @@ export default function AppsManagement() {
       key: 'revenue',
       label: 'Revenue',
       sortable: true,
-      render: (value) => <span className="font-medium text-green-600">{value}</span>,
+      render: (value) => (
+        <span className="font-medium text-green-600">{value}</span>
+      ),
     },
     {
       key: 'rating',
@@ -423,7 +437,8 @@ export default function AppsManagement() {
           <DialogHeader>
             <DialogTitle>Delete Application</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedApp?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedApp?.name}"? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
