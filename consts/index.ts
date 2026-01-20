@@ -6,3 +6,6 @@ export const statusColors: Record<string, string> = {
 };
 
 export const supportContact = '+233 (0) 530 516 908';
+
+export const prodUrl = "https://fmtsoftware.com";
+export const devUrl = "https://fmtsoftware-dev.netlify.app";

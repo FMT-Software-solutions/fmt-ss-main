@@ -89,7 +89,7 @@ export function HubtelCheckoutButtonClient({
     }
 
     try {
-      const response = await fetch('/api/payments/hubtel/checkout', {
+      const response = await fetch('/api/payments/hubtel/config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,34 @@ export function HubtelCheckoutButtonClient({
           allowedChannels,
         },
         callBacks: {
-          onPaymentSuccess: () => {
+          onPaymentSuccess: async (data) => {
+            console.log('Payment success:', data);
+            try {
+              const checkoutResponse = await fetch(
+                '/api/payments/hubtel/checkout',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    clientReference: resolvedReference,
+                    checkoutPayload,
+                    paymentResponse: data,
+                  }),
+                }
+              );
+              const checkoutResult = await checkoutResponse.json();
+              if (!checkoutResponse.ok) {
+                onFailure?.(checkoutResult);
+                onClose();
+                return;
+              }
+            } catch (error) {
+              onFailure?.(error);
+              onClose();
+              return;
+            }
             onSuccess({
               reference: resolvedReference,
               status: 'completed',

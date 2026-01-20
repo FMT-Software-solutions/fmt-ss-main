@@ -1,43 +1,172 @@
 import { createServiceClient } from '@/lib/supabase/server';
-import { client } from '@/sanity/lib/client';
-import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
 import { issuesServer } from '@/services/issues/server';
 import { NextResponse } from 'next/server';
 
 type HubtelCallbackPayload = {
   message?: string;
+  Message?: string;
   responseCode?: string;
-  data?: {
-    date?: string;
-    status?: string;
-    transactionId?: string;
-    externalTransactionId?: string;
-    paymentMethod?: string;
-    clientReference?: string;
-    currencyCode?: string | null;
-    amount?: number;
-    charges?: number;
-    amountAfterCharges?: number;
-    isFulfilled?: boolean | null;
-  };
+  ResponseCode?: string;
+  data?: Record<string, any> | string | null;
+  Data?: Record<string, any> | null;
+  success?: boolean;
+  mobileNumber?: string;
+  clientReference?: string;
+  ClientReference?: string;
 };
 
 const getPurchaseStatus = (status?: string) => {
   const normalized = status?.toLowerCase();
-  if (normalized === 'paid') {
+  if (!normalized) {
+    return 'pending';
+  }
+  if (['paid', 'success', 'successful', 'completed'].includes(normalized)) {
     return 'completed';
   }
-  if (normalized === 'unpaid' || normalized === 'failed') {
+  if (
+    ['unpaid', 'failed', 'declined', 'canceled', 'cancelled', 'reversed'].includes(
+      normalized
+    )
+  ) {
     return 'failed';
   }
   return 'pending';
+};
+
+const safeJsonParse = (value?: string | null) => {
+  if (!value) {
+    return null;
+  }
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeCallbackPayload = (payload: HubtelCallbackPayload | null) => {
+  if (!payload) {
+    return null;
+  }
+  const payloadRecord = payload as Record<string, any>;
+  const dataObject =
+    payloadRecord.data && typeof payloadRecord.data === 'object'
+      ? payloadRecord.data
+      : null;
+  const dataString = typeof payloadRecord.data === 'string' ? payloadRecord.data : null;
+  const dataPascal =
+    payloadRecord.Data && typeof payloadRecord.Data === 'object'
+      ? payloadRecord.Data
+      : null;
+  const parsedData = safeJsonParse(dataString);
+
+  const clientReference =
+    payloadRecord.clientReference ||
+    payloadRecord.ClientReference ||
+    dataObject?.clientReference ||
+    dataObject?.ClientReference ||
+    dataPascal?.clientReference ||
+    dataPascal?.ClientReference ||
+    parsedData?.clientReference ||
+    parsedData?.ClientReference ||
+    null;
+
+  const responseCode = payloadRecord.responseCode || payloadRecord.ResponseCode || null;
+  const message = payloadRecord.message || payloadRecord.Message || null;
+
+  const statusCandidate =
+    dataObject?.status ||
+    dataObject?.Status ||
+    dataPascal?.status ||
+    dataPascal?.Status ||
+    parsedData?.status ||
+    parsedData?.Status ||
+    payloadRecord.status ||
+    payloadRecord.Status ||
+    null;
+
+  const inferredStatus = responseCode === '0000' ? 'paid' : undefined;
+  const status = getPurchaseStatus(statusCandidate || inferredStatus);
+
+  const paymentMethod =
+    dataObject?.paymentMethod ||
+    dataObject?.PaymentMethod ||
+    dataPascal?.paymentMethod ||
+    dataPascal?.PaymentMethod ||
+    parsedData?.paymentMethod ||
+    parsedData?.PaymentMethod ||
+    null;
+
+  const externalTransactionId =
+    dataObject?.externalTransactionId ||
+    dataObject?.ExternalTransactionId ||
+    dataPascal?.externalTransactionId ||
+    dataPascal?.ExternalTransactionId ||
+    parsedData?.externalTransactionId ||
+    parsedData?.ExternalTransactionId ||
+    null;
+
+  const isClientSuccessPayload =
+    typeof payloadRecord.success === 'boolean' || typeof payloadRecord.data === 'string';
+
+  const hubtelCallbackPayload =
+    payloadRecord.ResponseCode || payloadRecord.Data || payloadRecord.responseCode
+      ? payload
+      : null;
+
+  const clientSuccessPayload = isClientSuccessPayload ? payload : null;
+
+  return {
+    clientReference,
+    status,
+    paymentMethod,
+    externalTransactionId,
+    parsedData,
+    responseCode,
+    message,
+    hubtelCallbackPayload,
+    clientSuccessPayload,
+  };
+};
+
+const resolveStatus = (existingStatus: string | null, incomingStatus: string) => {
+  if (incomingStatus === 'completed') {
+    return 'completed';
+  }
+  if (incomingStatus === 'failed') {
+    return 'failed';
+  }
+  return existingStatus || incomingStatus;
+};
+
+const mergePaymentDetails = (
+  existingDetails: Record<string, any> | null | undefined,
+  updates: {
+    hubtelCallbackPayload: HubtelCallbackPayload | null;
+    clientSuccessPayload: HubtelCallbackPayload | null;
+    parsedData: Record<string, any> | null;
+    responseCode: string | null;
+    message: string | null;
+  }
+) => {
+  const current = existingDetails || {};
+  return {
+    ...current,
+    hubtelCallback: updates.hubtelCallbackPayload ?? current.hubtelCallback ?? null,
+    clientSuccess: updates.clientSuccessPayload ?? current.clientSuccess ?? null,
+    statusCheck: updates.parsedData ?? current.statusCheck ?? null,
+    responseCode: updates.responseCode ?? current.responseCode ?? null,
+    message: updates.message ?? current.message ?? null,
+    updatedAt: new Date().toISOString(),
+  };
 };
 
 export async function POST(request: Request) {
   let payload: HubtelCallbackPayload | null = null;
   try {
     payload = await request.json();
-    const clientReference = payload?.data?.clientReference;
+    const normalized = normalizeCallbackPayload(payload);
+    const clientReference = normalized?.clientReference;
 
     if (!clientReference) {
       return NextResponse.json(
@@ -47,27 +176,13 @@ export async function POST(request: Request) {
     }
 
     const supabase = createServiceClient();
-    const status = getPurchaseStatus(payload?.data?.status);
-
-    const { data: session, error: sessionError } = await supabase
-      .from('hubtel_checkout_sessions')
-      .select('*')
-      .eq('client_reference', clientReference)
-      .maybeSingle();
-
-    if (sessionError) {
-      await issuesServer.logDatabaseError(
-        sessionError.message,
-        'hubtel_callback_fetch_session',
-        'hubtel_checkout_sessions',
-        undefined,
-        { clientReference }
-      );
-    }
+    const status = normalized?.status;
 
     const { data: existingPurchase, error: existingError } = await supabase
       .from('purchases')
-      .select('id, status, organization_id, items, amount')
+      .select(
+        'id, status, organization_id, items, amount, payment_details, payment_method, external_transaction_id'
+      )
       .eq('payment_reference', clientReference)
       .maybeSingle();
 
@@ -85,261 +200,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let purchaseRecord = existingPurchase || null;
-
-    if (purchaseRecord) {
-      const { data: updatedPurchase, error: updateError } = await supabase
-        .from('purchases')
-        .update({
-          status,
-          payment_provider: 'hubtel',
-          payment_reference: clientReference,
-          payment_method: payload?.data?.paymentMethod || null,
-          external_transaction_id: payload?.data?.externalTransactionId || null,
-          payment_details: payload,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', purchaseRecord.id)
-        .select('id, status, organization_id, items, amount')
-        .maybeSingle();
-
-      if (updateError) {
-        await issuesServer.logDatabaseError(
-          updateError.message,
-          'hubtel_callback_update_purchase',
-          'purchases',
-          undefined,
-          {
-            clientReference,
-            payload,
-          }
-        );
-        return NextResponse.json(
-          { error: 'Failed to update purchase' },
-          { status: 500 }
-        );
-      }
-      purchaseRecord = updatedPurchase || purchaseRecord;
-    } else if (status === 'completed' && session) {
-      const billingDetails = session.billing_details;
-      const items = session.items || [];
-      const appProvisioningDetails = session.app_provisioning_details || {};
-
-      let organizationId = '';
-
-      if (session.is_existing_org) {
-        const { data: existingOrg, error: orgLookupError } = await supabase
-          .from('organizations')
-          .select('id, name, email, phone')
-          .eq('email', billingDetails.organizationEmail)
-          .maybeSingle();
-
-        if (orgLookupError) {
-          await issuesServer.logDatabaseError(
-            orgLookupError.message,
-            'hubtel_callback_fetch_org',
-            'organizations',
-            undefined,
-            { clientReference }
-          );
-        }
-
-        if (existingOrg?.id) {
-          organizationId = existingOrg.id;
-          const updates: Record<string, any> = {};
-
-          if (billingDetails.organizationName !== existingOrg.name) {
-            updates.name = billingDetails.organizationName;
-          }
-
-          if (billingDetails.organizationEmail !== existingOrg.email) {
-            updates.email = billingDetails.organizationEmail;
-          }
-
-          if (billingDetails.phoneNumber && billingDetails.phoneNumber !== existingOrg.phone) {
-            updates.phone = billingDetails.phoneNumber;
-          }
-
-          if (Object.keys(updates).length > 0) {
-            await supabase.from('organizations').update(updates).eq('id', organizationId);
-          }
-        }
-      }
-
-      if (!organizationId) {
-        const { data: newOrg, error: orgCreateError } = await supabase
-          .from('organizations')
-          .insert({
-            name: billingDetails.organizationName,
-            email: billingDetails.organizationEmail,
-            phone: billingDetails.phoneNumber,
-            status: 'active',
-            verificationStatus: 'pending',
-            address: {},
-          })
-          .select()
-          .single();
-
-        if (orgCreateError) {
-          await issuesServer.logDatabaseError(
-            orgCreateError.message,
-            'hubtel_callback_create_org',
-            'organizations',
-            undefined,
-            { clientReference }
-          );
-          return NextResponse.json(
-            { error: 'Failed to create organization' },
-            { status: 500 }
-          );
-        }
-
-        organizationId = newOrg.id;
-      }
-
-      if (organizationId) {
-        const { data: existingAddresses } = await supabase
-          .from('billing_addresses')
-          .select('*')
-          .eq('organization_id', organizationId);
-
-        const addressExists = existingAddresses?.some(
-          (addr) =>
-            addr.street === billingDetails.address.street &&
-            addr.city === billingDetails.address.city &&
-            addr.state === billingDetails.address.state &&
-            addr.country === billingDetails.address.country &&
-            addr.postalCode === billingDetails.address.postalCode
-        );
-
-        if (!addressExists) {
-          await supabase.from('billing_addresses').insert({
-            organization_id: organizationId,
-            street: billingDetails.address.street,
-            city: billingDetails.address.city,
-            state: billingDetails.address.state,
-            country: billingDetails.address.country,
-            postalCode: billingDetails.address.postalCode,
-            isDefault: !existingAddresses || existingAddresses.length === 0,
-          });
-        }
-      }
-
-      const { data: createdPurchase, error: purchaseError } = await supabase
-        .from('purchases')
-        .insert({
-          organization_id: organizationId,
-          payment_reference: clientReference,
-          amount: session.total,
-          status,
-          items: items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.product?.price || 0,
-            appId: item.product?.slug,
-          })),
-          payment_provider: 'hubtel',
-          payment_method: payload?.data?.paymentMethod || null,
-          external_transaction_id: payload?.data?.externalTransactionId || null,
-          payment_details: payload,
-        })
-        .select('id, status, organization_id, items, amount')
-        .single();
-
-      if (purchaseError) {
-        await issuesServer.logDatabaseError(
-          purchaseError.message,
-          'hubtel_callback_create_purchase',
-          'purchases',
-          undefined,
-          { clientReference }
-        );
-        return NextResponse.json(
-          { error: 'Failed to create purchase' },
-          { status: 500 }
-        );
-      }
-
-      purchaseRecord = createdPurchase;
-
-      if (status === 'completed' && billingDetails?.organizationEmail) {
-        const origin = new URL(request.url).origin;
-        try {
-          await fetch(`${origin}/api/purchases/confirmation-email`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              organizationDetails: {
-                organizationName: billingDetails.organizationName || '',
-                organizationEmail: billingDetails.organizationEmail,
-              },
-              items,
-              total: session.total,
-            }),
-          });
-        } catch (emailError) {
-          await issuesServer.logEmailError(
-            emailError instanceof Error
-              ? emailError.message
-              : 'Failed to send purchase confirmation email',
-            'hubtel_purchase_confirmation',
-            billingDetails.organizationEmail,
-            undefined,
-            undefined,
-            { clientReference }
-          );
-        }
-      }
-
-      if (status === 'completed' && Object.keys(appProvisioningDetails).length > 0) {
-        try {
-          const productIds = items.map((item: any) => item.productId);
-          const appsWithProvisionDetails = await client.fetch(
-            appsProvisioningDetailsByIdsQuery,
-            { ids: productIds }
-          );
-
-          const provisioningDetails = appsWithProvisionDetails.reduce(
-            (acc: Record<string, any>, app: Record<string, any>) => {
-              acc[app._id] = {
-                id: app._id,
-                name: app.title,
-                ...appProvisioningDetails[app._id],
-                ...app.appProvisioning,
-                platforms: app.platforms || {},
-                webAppUrl: app.webAppUrl || '',
-              };
-              return acc;
-            },
-            {}
-          );
-
-          const origin = new URL(request.url).origin;
-          await fetch(`${origin}/api/app-provisioning`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              organizationId,
-              billingDetails,
-              appProvisioningDetails: provisioningDetails,
-            }),
-          });
-        } catch (provisioningError) {
-          await issuesServer.logApiError(
-            provisioningError instanceof Error
-              ? provisioningError.message
-              : 'Hubtel provisioning failed',
-            '/api/app-provisioning',
-            'POST',
-            { clientReference }
-          );
-        }
-      }
-    } else {
+    if (!existingPurchase) {
       await issuesServer.logApiError(
         'Purchase record not found for Hubtel callback',
         '/api/payments/hubtel/callback',
@@ -349,7 +210,49 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true, matched: false, status });
     }
 
-    return NextResponse.json({ received: true, matched: true, status });
+    const mergedPaymentDetails = mergePaymentDetails(
+      existingPurchase.payment_details,
+      {
+        hubtelCallbackPayload: normalized.hubtelCallbackPayload,
+        clientSuccessPayload: normalized.clientSuccessPayload,
+        parsedData: normalized.parsedData,
+        responseCode: normalized.responseCode,
+        message: normalized.message,
+      }
+    );
+    const resolvedStatus = resolveStatus(existingPurchase.status, status);
+    const { error: updateError } = await supabase
+      .from('purchases')
+      .update({
+        status: resolvedStatus,
+        payment_provider: 'hubtel',
+        payment_reference: clientReference,
+        payment_method: normalized.paymentMethod ?? existingPurchase.payment_method,
+        external_transaction_id:
+          normalized.externalTransactionId ?? existingPurchase.external_transaction_id,
+        payment_details: mergedPaymentDetails,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existingPurchase.id);
+
+    if (updateError) {
+      await issuesServer.logDatabaseError(
+        updateError.message,
+        'hubtel_callback_update_purchase',
+        'purchases',
+        undefined,
+        {
+          clientReference,
+          payload,
+        }
+      );
+      return NextResponse.json(
+        { error: 'Failed to update purchase' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ received: true, matched: true, status: resolvedStatus });
   } catch (error) {
     await issuesServer.logApiError(
       error instanceof Error ? error.message : 'Hubtel callback failure',

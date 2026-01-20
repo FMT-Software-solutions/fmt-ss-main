@@ -7,6 +7,7 @@ import { client } from '@/sanity/lib/client';
 import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
 import { issuesClient } from '@/services/issues/client';
 import { BillingAddress } from '@/types/organization';
+import { prodUrl } from '@/consts';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ShoppingBag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -140,6 +141,15 @@ export default function CheckoutContent() {
       hasActivePromotions,
     };
   }, [items, discountAmount, appliedDiscount]);
+
+  const isProd = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.location.origin === prodUrl;
+  }, []);
+
+  const displayTotal = isProd ? checkoutState.finalTotal : 1;
 
   const handleDiscountApplied = (
     discount: DiscountCode | null,
@@ -473,8 +483,7 @@ export default function CheckoutContent() {
 
             <OrderSummary
               items={items}
-              // total={checkoutState.finalTotal}
-              total={1}
+              total={displayTotal}
               subtotal={checkoutState.subtotal}
               discountAmount={checkoutState.discountAmount}
               appliedDiscount={checkoutState.appliedDiscount}
