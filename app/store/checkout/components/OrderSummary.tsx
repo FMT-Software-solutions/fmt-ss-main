@@ -81,11 +81,6 @@ export function OrderSummary({
     }
     return `Payment for ${items.length} items`;
   }, [items]);
-  const clientReference = useMemo(
-    () => `FMT_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-    []
-  );
-
   const handlePrimaryFailure = () => {
     toast.error(
       'Primary payment method failed. Please try the alternative method.'
@@ -229,7 +224,6 @@ export function OrderSummary({
           amount={total}
           customerPhoneNumber={metadata.phone}
           purchaseDescription={purchaseDescription}
-          clientReference={clientReference}
           checkoutPayload={hubtelCheckoutPayload}
           onSuccess={onSuccess}
           onFailure={handlePrimaryFailure}

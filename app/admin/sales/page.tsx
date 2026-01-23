@@ -44,6 +44,7 @@ import {
   FileText,
   Eye,
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 // Mock sales data
 const salesData = [
@@ -54,7 +55,7 @@ const salesData = [
     appType: 'Desktop',
     organization: 'Acme Corporation',
     customer: 'John Smith',
-    amount: 149.99,
+    amount: 1599,
     currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'Credit Card',
@@ -70,7 +71,7 @@ const salesData = [
     appType: 'Web',
     organization: 'TechStart Inc',
     customer: 'Sarah Johnson',
-    amount: 79.99,
+    amount: 1799,
     currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'PayPal',
@@ -86,7 +87,7 @@ const salesData = [
     appType: 'Mobile',
     organization: 'Global Solutions',
     customer: 'Mike Davis',
-    amount: 199.99,
+    amount: 1299,
     currency: 'GHS',
     status: 'Pending',
     paymentMethod: 'Bank Transfer',
@@ -102,7 +103,7 @@ const salesData = [
     appType: 'Desktop',
     organization: 'StartupXYZ',
     customer: 'Emily Chen',
-    amount: 29.99,
+    amount: 2999,
     currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'Credit Card',
@@ -118,7 +119,7 @@ const salesData = [
     appType: 'Web',
     organization: 'Enterprise Corp',
     customer: 'Robert Wilson',
-    amount: 299.99,
+    amount: 2567,
     currency: 'GHS',
     status: 'Failed',
     paymentMethod: 'Credit Card',
@@ -134,7 +135,7 @@ const salesData = [
     appType: 'Mobile',
     organization: 'Innovation Labs',
     customer: 'Lisa Anderson',
-    amount: 59.99,
+    amount: 1599,
     currency: 'GHS',
     status: 'Completed',
     paymentMethod: 'PayPal',
@@ -176,6 +177,7 @@ export default function SalesPage() {
   const [hubtelStatus, setHubtelStatus] = useState<any | null>(null);
   const [hubtelError, setHubtelError] = useState<string | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Calculate stats
   const totalRevenue = salesData
@@ -316,6 +318,21 @@ export default function SalesPage() {
     }
   };
 
+  const handleCopyRaw = async () => {
+    if (!hubtelStatus) {
+      return;
+    }
+    const text = JSON.stringify(hubtelStatus, null, 2);
+    await navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 1500);
+  };
+
+  const hubtelDetails =
+    hubtelStatus?.data?.Data?.[0] || hubtelStatus?.data?.data?.[0] || null;
+  const hubtelResponseCode =
+    hubtelStatus?.data?.ResponseCode || hubtelStatus?.data?.responseCode;
+
   const salesColumns: Column<typeof salesData[0]>[] = [
     {
       key: 'transactionId',
@@ -354,8 +371,10 @@ export default function SalesPage() {
       sortable: true,
       render: (value, row) => (
         <div className="text-right">
-          <div className="font-medium">${value.toFixed(2)}</div>
-          <div className="text-sm text-muted-foreground">{row.currency}</div>
+          <div className="font-medium">
+            {row.currency}
+            {value.toFixed(2)}
+          </div>
         </div>
       ),
     },
@@ -410,7 +429,7 @@ export default function SalesPage() {
       <Tabs defaultValue="sales" className="space-y-6">
         <TabsList>
           <TabsTrigger value="sales">Sales</TabsTrigger>
-          <TabsTrigger value="status">Status Check</TabsTrigger>
+          <TabsTrigger value="status">Transaction Status Check</TabsTrigger>
         </TabsList>
         <TabsContent value="sales" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -500,7 +519,7 @@ export default function SalesPage() {
                         <span>{item.name}</span>
                       </div>
                       <span className="font-medium">
-                        ${item.value.toLocaleString()}
+                        GHS{item.value.toLocaleString()}
                       </span>
                     </div>
                   ))}
@@ -523,13 +542,18 @@ export default function SalesPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value: any) => [`${value}%`, 'Usage']} />
+                    <Tooltip
+                      formatter={(value: any) => [`${value}%`, 'Usage']}
+                    />
                     <Bar dataKey="value" fill="#8884d8" minPointSize={5} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="space-y-4">
                   {paymentMethodData.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between"
+                    >
                       <div className="flex items-center gap-2">
                         <div
                           className="w-3 h-3 rounded-full"
@@ -583,7 +607,7 @@ export default function SalesPage() {
         <TabsContent value="status">
           <Card>
             <CardHeader>
-              <CardTitle>Hubtel Status Check</CardTitle>
+              <CardTitle>Payment Status Check</CardTitle>
               <CardDescription>
                 Lookup payment status by client reference
               </CardDescription>
@@ -609,12 +633,136 @@ export default function SalesPage() {
                 </Button>
               </div>
               {hubtelError ? (
-                <div className="mt-4 text-sm text-destructive">{hubtelError}</div>
+                <div className="mt-4 text-sm text-destructive">
+                  {hubtelError}
+                </div>
               ) : null}
               {hubtelStatus ? (
-                <pre className="mt-4 max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
-                  {JSON.stringify(hubtelStatus, null, 2)}
-                </pre>
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-md border p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">Summary</div>
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        Status:
+                        <Badge
+                          variant="outline"
+                          className={
+                            hubtelDetails?.TransactionStatus === 'Success'
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : 'bg-destructive text-destructive-foreground'
+                          }
+                        >
+                          {hubtelDetails?.TransactionStatus ||
+                            hubtelDetails?.InvoiceStatus ||
+                            'Unknown'}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Separator className="my-4" />
+                    <div className="mt-4 grid gap-3 text-sm">
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Client Reference
+                        </span>
+                        <span className="font-medium">
+                          {hubtelDetails?.ClientReference ||
+                            hubtelDetails?.clientReference ||
+                            hubtelReference}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Response Code
+                        </span>
+                        <span className="font-medium">
+                          {hubtelResponseCode || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">Amount</span>
+                        <span className="font-medium">
+                          {hubtelDetails?.CurrencyCode || 'GHS'}{' '}
+                          {typeof hubtelDetails?.TransactionAmount === 'number'
+                            ? hubtelDetails.TransactionAmount.toFixed(2)
+                            : hubtelDetails?.TransactionAmount || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">Fees</span>
+                        <span className="font-medium">
+                          {typeof hubtelDetails?.Fee === 'number'
+                            ? hubtelDetails.Fee.toFixed(2)
+                            : hubtelDetails?.Fee || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Amount After Fees
+                        </span>
+                        <span className="font-medium">
+                          {typeof hubtelDetails?.AmountAfterFees === 'number'
+                            ? hubtelDetails.AmountAfterFees.toFixed(2)
+                            : hubtelDetails?.AmountAfterFees || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Payment Method
+                        </span>
+                        <span className="font-medium">
+                          {hubtelDetails?.PaymentMethod || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">Mobile</span>
+                        <span className="font-medium">
+                          {hubtelDetails?.MobileNumber || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Network Txn ID
+                        </span>
+                        <span className="font-medium">
+                          {hubtelDetails?.NetworkTransactionId || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Transaction ID
+                        </span>
+                        <span className="font-medium">
+                          {hubtelDetails?.TransactionId || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Provider Result
+                        </span>
+                        <span className="font-medium">
+                          {hubtelDetails?.ProviderDescription ||
+                            hubtelDetails?.ProviderResponseCode ||
+                            'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-md border">
+                    <div className="flex items-center justify-between border-b px-4 py-3">
+                      <div className="text-sm font-medium">Raw JSON</div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyRaw}
+                      >
+                        {isCopied ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
+                    <pre className="max-h-96 overflow-auto bg-muted/50 p-4 text-xs">
+                      {JSON.stringify(hubtelStatus, null, 2)}
+                    </pre>
+                  </div>
+                </div>
               ) : null}
             </CardContent>
           </Card>

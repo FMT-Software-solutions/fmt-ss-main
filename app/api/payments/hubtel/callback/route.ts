@@ -165,6 +165,7 @@ export async function POST(request: Request) {
   let payload: HubtelCallbackPayload | null = null;
   try {
     payload = await request.json();
+    console.log(payload);
     const normalized = normalizeCallbackPayload(payload);
     const clientReference = normalized?.clientReference;
 
