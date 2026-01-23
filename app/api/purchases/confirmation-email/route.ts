@@ -7,6 +7,20 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(request: Request) {
   try {
     const { organizationDetails, items, total } = await request.json();
+    const normalizedItems = Array.isArray(items)
+      ? items.map((item) => {
+          const resolvedProduct = item?.product || {
+            title: item?.title || item?.productId || 'Item',
+            price: item?.price ?? 0,
+            downloadUrl: item?.downloadUrl,
+            webAppUrl: item?.webAppUrl,
+          };
+          return {
+            ...item,
+            product: resolvedProduct,
+          };
+        })
+      : [];
 
     // Send confirmation email with purchase details
     try {
@@ -16,7 +30,7 @@ export async function POST(request: Request) {
         subject: 'Purchase Confirmation - FMT Software Solutions',
         react: PurchaseConfirmationEmail({
           organizationDetails,
-          items,
+          items: normalizedItems,
           total,
         }),
       });

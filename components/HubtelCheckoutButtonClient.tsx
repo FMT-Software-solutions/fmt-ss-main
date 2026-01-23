@@ -43,8 +43,9 @@ interface HubtelPaymentProps {
   isValid?: boolean;
 }
 
-const getOrderId = () => {
-  return `FMT_${new Date().getTime()}`;
+const getOrderId = (seed?: string) => {
+  const base = seed ? seed.replace(/\s+/g, '') : 'FMT';
+  return `${base}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 };
 
 export function HubtelCheckoutButtonClient({
@@ -80,7 +81,7 @@ export function HubtelCheckoutButtonClient({
     if (!isReady) {
       return;
     }
-    const reference = clientReference || getOrderId();
+    const reference = getOrderId(clientReference);
     const normalizedPhone = normalizePhoneNumber(customerPhoneNumber || '');
 
     if (!normalizedPhone) {

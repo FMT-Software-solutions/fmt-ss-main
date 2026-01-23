@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { AdminHeader } from '../components/AdminHeader';
-import { StatsCard } from '../components/StatsCard';
-import { DataTable, Column, StatusBadge } from '../components/DataTable';
-import { FilterBar } from '../components/FilterBar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -12,39 +10,40 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Line,
+  CreditCard,
+  DollarSign,
+  Download,
+  Eye,
+  FileText,
+  ShoppingCart,
+  TrendingUp,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
   Area,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
   ComposedChart,
+  Line,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
-import {
-  DollarSign,
-  TrendingUp,
-  ShoppingCart,
-  CreditCard,
-  Download,
-  Calendar,
-  Filter,
-  FileText,
-  Eye,
-} from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { AdminHeader } from '../components/AdminHeader';
+import { Column, DataTable, StatusBadge } from '../components/DataTable';
+import { FilterBar } from '../components/FilterBar';
+import { StatsCard } from '../components/StatsCard';
 
 // Mock sales data
 const salesData = [
@@ -178,6 +177,46 @@ export default function SalesPage() {
   const [hubtelError, setHubtelError] = useState<string | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [manualApps, setManualApps] = useState<
+    Array<{ id: string; title: string; price: number }>
+  >([]);
+  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
+  const [manualQuantities, setManualQuantities] = useState<
+    Record<string, number>
+  >({});
+  const [manualBillingDetails, setManualBillingDetails] = useState({
+    organizationName: '',
+    organizationEmail: '',
+    phoneNumber: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      postalCode: '',
+    },
+  });
+  const [manualIsExistingOrg, setManualIsExistingOrg] = useState(false);
+  const [manualTotal, setManualTotal] = useState('');
+  const [manualTotalAmount, setManualTotalAmount] = useState(0);
+  const [manualPurchase, setManualPurchase] = useState<any | null>(null);
+  const [manualOrganizationId, setManualOrganizationId] = useState('');
+  const [manualClientReference, setManualClientReference] = useState('');
+  const [manualClientReferenceInput, setManualClientReferenceInput] = useState(
+    ''
+  );
+  const [manualItems, setManualItems] = useState<Array<any>>([]);
+  const [manualProvisioningDetails, setManualProvisioningDetails] = useState<
+    Record<
+      string,
+      { name?: string; useSameEmailAsAdmin: boolean; userEmail?: string }
+    >
+  >({});
+  const [manualStatus, setManualStatus] = useState<string | null>(null);
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
+  const [isProvisioning, setIsProvisioning] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Calculate stats
   const totalRevenue = salesData
@@ -193,6 +232,26 @@ export default function SalesPage() {
   ).length;
   const averageOrderValue =
     completedTransactions > 0 ? totalRevenue / completedTransactions : 0;
+
+  useEffect(() => {
+    const loadApps = async () => {
+      try {
+        const response = await fetch('/api/admin/manual-purchases/apps');
+        const data = await response.json();
+        if (!response.ok) {
+          setManualError(data?.error || 'Failed to load apps');
+          return;
+        }
+        setManualApps(data?.apps || []);
+      } catch (error) {
+        setManualError(
+          error instanceof Error ? error.message : 'Failed to load apps'
+        );
+      }
+    };
+
+    loadApps();
+  }, []);
 
   const statsData = [
     {
@@ -328,6 +387,247 @@ export default function SalesPage() {
     setTimeout(() => setIsCopied(false), 1500);
   };
 
+  const handleManualBillingFieldChange = (
+    field: keyof typeof manualBillingDetails,
+    value: string
+  ) => {
+    setManualBillingDetails((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleManualAddressChange = (
+    field: keyof typeof manualBillingDetails.address,
+    value: string
+  ) => {
+    setManualBillingDetails((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleManualAppToggle = (appId: string, checked: boolean) => {
+    setSelectedAppIds((prev) => {
+      if (checked) {
+        return prev.includes(appId) ? prev : [...prev, appId];
+      }
+      return prev.filter((id) => id !== appId);
+    });
+    setManualQuantities((prev) => ({
+      ...prev,
+      [appId]: prev[appId] ?? 1,
+    }));
+  };
+
+  const handleManualQuantityChange = (appId: string, value: string) => {
+    const quantity = Number(value);
+    if (Number.isNaN(quantity) || quantity <= 0) {
+      return;
+    }
+    setManualQuantities((prev) => ({
+      ...prev,
+      [appId]: quantity,
+    }));
+  };
+
+  const handleProvisioningUseSameChange = (appId: string, checked: boolean) => {
+    setManualProvisioningDetails((prev) => ({
+      ...prev,
+      [appId]: {
+        ...prev[appId],
+        useSameEmailAsAdmin: checked,
+        userEmail: checked
+          ? manualBillingDetails.organizationEmail
+          : prev[appId]?.userEmail,
+      },
+    }));
+  };
+
+  const handleProvisioningEmailChange = (appId: string, value: string) => {
+    setManualProvisioningDetails((prev) => ({
+      ...prev,
+      [appId]: {
+        ...prev[appId],
+        userEmail: value,
+      },
+    }));
+  };
+
+  const selectedApps = manualApps.filter((app) =>
+    selectedAppIds.includes(app.id)
+  );
+
+  const computedTotal = selectedApps.reduce((sum, app) => {
+    const quantity = manualQuantities[app.id] || 1;
+    return sum + app.price * quantity;
+  }, 0);
+
+  const resolvedManualTotal =
+    manualTotal.trim().length > 0 ? Number(manualTotal) : computedTotal;
+  const safeResolvedManualTotal = Number.isFinite(resolvedManualTotal)
+    ? resolvedManualTotal
+    : 0;
+
+  const handleCreateManualPurchase = async () => {
+    setManualError(null);
+    setManualStatus(null);
+
+    if (!manualBillingDetails.organizationName.trim()) {
+      setManualError('Organization name is required.');
+      return;
+    }
+    if (!manualBillingDetails.organizationEmail.trim()) {
+      setManualError('Organization email is required.');
+      return;
+    }
+    if (!manualBillingDetails.address.street.trim()) {
+      setManualError('Street address is required.');
+      return;
+    }
+    if (!manualBillingDetails.address.city.trim()) {
+      setManualError('City is required.');
+      return;
+    }
+    if (!manualBillingDetails.address.state.trim()) {
+      setManualError('State is required.');
+      return;
+    }
+    if (!manualBillingDetails.address.country.trim()) {
+      setManualError('Country is required.');
+      return;
+    }
+    if (selectedAppIds.length === 0) {
+      setManualError('Select at least one app.');
+      return;
+    }
+    if (Number.isNaN(resolvedManualTotal) || resolvedManualTotal <= 0) {
+      setManualError('Enter a valid total amount.');
+      return;
+    }
+
+    setIsCreatingPurchase(true);
+    try {
+      const items = selectedApps.map((app) => ({
+        productId: app.id,
+        quantity: manualQuantities[app.id] || 1,
+        price: app.price,
+        title: app.title,
+      }));
+
+      const response = await fetch('/api/admin/manual-purchases/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingDetails: manualBillingDetails,
+          items,
+          total: safeResolvedManualTotal,
+          isExistingOrg: manualIsExistingOrg,
+          clientReference: manualClientReferenceInput.trim() || undefined,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setManualError(result?.error || 'Failed to create purchase record.');
+        return;
+      }
+
+      setManualPurchase(result.purchase);
+      setManualOrganizationId(result.organizationId || '');
+      setManualClientReference(result.clientReference || '');
+      setManualItems(items);
+      setManualProvisioningDetails(result.provisioningDrafts || {});
+      setManualTotalAmount(safeResolvedManualTotal);
+      setManualStatus('Purchase created. Review provisioning details next.');
+    } catch (error) {
+      setManualError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to create purchase record.'
+      );
+    } finally {
+      setIsCreatingPurchase(false);
+    }
+  };
+
+  const handleProvisionApps = async () => {
+    if (!manualOrganizationId) {
+      setManualError('Create a purchase record first.');
+      return;
+    }
+    setManualError(null);
+    setManualStatus(null);
+    setIsProvisioning(true);
+    try {
+      const response = await fetch('/api/admin/manual-purchases/provision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          organizationId: manualOrganizationId,
+          billingDetails: manualBillingDetails,
+          appProvisioningDetails: manualProvisioningDetails,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setManualError(result?.error || 'Provisioning failed.');
+        return;
+      }
+      setManualStatus('Provisioning completed.');
+    } catch (error) {
+      setManualError(
+        error instanceof Error ? error.message : 'Provisioning failed.'
+      );
+    } finally {
+      setIsProvisioning(false);
+    }
+  };
+
+  const handleSendManualEmail = async () => {
+    if (manualItems.length === 0) {
+      setManualError('Create a purchase record first.');
+      return;
+    }
+    setManualError(null);
+    setManualStatus(null);
+    setIsSendingEmail(true);
+    try {
+      const response = await fetch('/api/admin/manual-purchases/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingDetails: manualBillingDetails,
+          items: manualItems,
+          total: manualTotalAmount || safeResolvedManualTotal,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setManualError(result?.error || 'Failed to send email.');
+        return;
+      }
+      setManualStatus('Confirmation email sent.');
+    } catch (error) {
+      setManualError(
+        error instanceof Error ? error.message : 'Failed to send email.'
+      );
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const hubtelDetails =
     hubtelStatus?.data?.Data?.[0] || hubtelStatus?.data?.data?.[0] || null;
   const hubtelResponseCode =
@@ -419,16 +719,12 @@ export default function SalesPage() {
       <AdminHeader
         title="Sales & Transactions"
         description="Monitor sales performance and transaction history"
-        action={{
-          label: 'Export Report',
-          onClick: () => console.log('Export sales report'),
-          icon: Download,
-        }}
       />
 
       <Tabs defaultValue="sales" className="space-y-6">
         <TabsList>
           <TabsTrigger value="sales">Sales</TabsTrigger>
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
           <TabsTrigger value="status">Transaction Status Check</TabsTrigger>
         </TabsList>
         <TabsContent value="sales" className="space-y-6">
@@ -764,6 +1060,407 @@ export default function SalesPage() {
                   </div>
                 </div>
               ) : null}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="manual">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manual Purchase Entry</CardTitle>
+              <CardDescription>
+                Create purchase records, provision apps, and send confirmation
+                emails
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {manualError ? (
+                <div className="text-sm text-destructive">{manualError}</div>
+              ) : null}
+              {manualStatus ? (
+                <div className="text-sm text-emerald-600">{manualStatus}</div>
+              ) : null}
+              <Tabs defaultValue="purchase" className="space-y-4">
+                <TabsList>
+                  <TabsTrigger value="purchase">Create Purchase</TabsTrigger>
+                  <TabsTrigger value="provision">Provision Apps</TabsTrigger>
+                  <TabsTrigger value="email">Send Email</TabsTrigger>
+                </TabsList>
+                <TabsContent value="purchase" className="space-y-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Apps</CardTitle>
+                        <CardDescription>
+                          Select the apps and quantities for this purchase
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {manualApps.map((app) => {
+                            const isSelected = selectedAppIds.includes(app.id);
+                            return (
+                              <div
+                                key={app.id}
+                                className="flex items-center justify-between rounded-md border px-3 py-2"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) =>
+                                      handleManualAppToggle(
+                                        app.id,
+                                        Boolean(checked)
+                                      )
+                                    }
+                                  />
+                                  <div>
+                                    <div className="text-sm font-medium">
+                                      {app.title}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      GHS {app.price.toFixed(2)}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Input
+                                  className="h-8 w-20"
+                                  type="number"
+                                  min={1}
+                                  value={manualQuantities[app.id] || 1}
+                                  onChange={(event) =>
+                                    handleManualQuantityChange(
+                                      app.id,
+                                      event.target.value
+                                    )
+                                  }
+                                  disabled={!isSelected}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Organization & Billing</CardTitle>
+                        <CardDescription>
+                          Provide organization and billing details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-org-name">
+                              Organization Name
+                            </Label>
+                            <Input
+                              id="manual-org-name"
+                              value={manualBillingDetails.organizationName}
+                              onChange={(event) =>
+                                handleManualBillingFieldChange(
+                                  'organizationName',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Organization name"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-org-email">
+                              Organization Email
+                            </Label>
+                            <Input
+                              id="manual-org-email"
+                              type="email"
+                              value={manualBillingDetails.organizationEmail}
+                              onChange={(event) =>
+                                handleManualBillingFieldChange(
+                                  'organizationEmail',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="email@company.com"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-phone">Phone Number</Label>
+                            <Input
+                              id="manual-phone"
+                              value={manualBillingDetails.phoneNumber}
+                              onChange={(event) =>
+                                handleManualBillingFieldChange(
+                                  'phoneNumber',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="+233..."
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 pt-6">
+                            <Checkbox
+                              id="manual-existing-org"
+                              checked={manualIsExistingOrg}
+                              onCheckedChange={(checked) =>
+                                setManualIsExistingOrg(Boolean(checked))
+                              }
+                            />
+                            <Label htmlFor="manual-existing-org">
+                              Existing organization
+                            </Label>
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="manual-street">
+                              Street Address
+                            </Label>
+                            <Input
+                              id="manual-street"
+                              value={manualBillingDetails.address.street}
+                              onChange={(event) =>
+                                handleManualAddressChange(
+                                  'street',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Street address"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-city">City</Label>
+                            <Input
+                              id="manual-city"
+                              value={manualBillingDetails.address.city}
+                              onChange={(event) =>
+                                handleManualAddressChange(
+                                  'city',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="City"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-state">State</Label>
+                            <Input
+                              id="manual-state"
+                              value={manualBillingDetails.address.state}
+                              onChange={(event) =>
+                                handleManualAddressChange(
+                                  'state',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="State"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-country">Country</Label>
+                            <Input
+                              id="manual-country"
+                              value={manualBillingDetails.address.country}
+                              onChange={(event) =>
+                                handleManualAddressChange(
+                                  'country',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Country"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-postal">Postal Code</Label>
+                            <Input
+                              id="manual-postal"
+                              value={manualBillingDetails.address.postalCode}
+                              onChange={(event) =>
+                                handleManualAddressChange(
+                                  'postalCode',
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Postal code"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Amount & Reference</CardTitle>
+                        <CardDescription>
+                          Review total and add a payment reference
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-total">
+                              Total Amount (GHS)
+                            </Label>
+                            <Input
+                              id="manual-total"
+                              type="number"
+                              min={0}
+                              value={manualTotal}
+                              onChange={(event) =>
+                                setManualTotal(event.target.value)
+                              }
+                              placeholder={computedTotal.toFixed(2)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="manual-client-reference">
+                              Payment Reference (Optional)
+                            </Label>
+                            <Input
+                              id="manual-client-reference"
+                              value={manualClientReferenceInput}
+                              onChange={(event) =>
+                                setManualClientReferenceInput(
+                                  event.target.value
+                                )
+                              }
+                              placeholder="FMT_12345"
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-md border px-4 py-3 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              Computed
+                            </span>
+                            <span className="font-medium">
+                              GHS {computedTotal.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-muted-foreground">Final</span>
+                            <span className="font-medium">
+                              GHS {safeResolvedManualTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Button
+                    onClick={handleCreateManualPurchase}
+                    disabled={isCreatingPurchase}
+                  >
+                    {isCreatingPurchase ? 'Creating...' : 'Create Purchase'}
+                  </Button>
+                </TabsContent>
+                <TabsContent value="provision" className="space-y-4">
+                  {manualPurchase ? (
+                    <div className="rounded-md border p-4 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Payment Reference
+                        </span>
+                        <span className="font-medium">
+                          {manualClientReference ||
+                            manualPurchase?.payment_reference}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+                  <div className="space-y-3">
+                    {Object.entries(manualProvisioningDetails).length === 0 ? (
+                      <div className="text-sm text-muted-foreground">
+                        Create a purchase record to load provisioning details.
+                      </div>
+                    ) : (
+                      Object.entries(manualProvisioningDetails).map(
+                        ([appId, details]) => (
+                          <div
+                            key={appId}
+                            className="rounded-md border p-4 space-y-3"
+                          >
+                            <div className="font-medium">
+                              {details.name || appId}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={details.useSameEmailAsAdmin}
+                                onCheckedChange={(checked) =>
+                                  handleProvisioningUseSameChange(
+                                    appId,
+                                    Boolean(checked)
+                                  )
+                                }
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                Use organization email
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`manual-provision-${appId}`}>
+                                User Email
+                              </Label>
+                              <Input
+                                id={`manual-provision-${appId}`}
+                                value={
+                                  details.useSameEmailAsAdmin
+                                    ? manualBillingDetails.organizationEmail
+                                    : details.userEmail || ''
+                                }
+                                onChange={(event) =>
+                                  handleProvisioningEmailChange(
+                                    appId,
+                                    event.target.value
+                                  )
+                                }
+                                disabled={details.useSameEmailAsAdmin}
+                              />
+                            </div>
+                          </div>
+                        )
+                      )
+                    )}
+                  </div>
+                  <Button
+                    onClick={handleProvisionApps}
+                    disabled={isProvisioning}
+                  >
+                    {isProvisioning ? 'Provisioning...' : 'Provision Apps'}
+                  </Button>
+                </TabsContent>
+                <TabsContent value="email" className="space-y-4">
+                  <div className="rounded-md border p-4 text-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Recipient</span>
+                      <span className="font-medium">
+                        {manualBillingDetails.organizationEmail || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Total</span>
+                      <span className="font-medium">
+                        GHS {safeResolvedManualTotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2 pt-2">
+                      {manualItems.map((item) => (
+                        <div
+                          key={item.productId}
+                          className="flex items-center justify-between"
+                        >
+                          <span>{item.title || item.productId}</span>
+                          <span className="font-medium">x{item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleSendManualEmail}
+                    disabled={isSendingEmail}
+                  >
+                    {isSendingEmail ? 'Sending...' : 'Send Email'}
+                  </Button>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </TabsContent>

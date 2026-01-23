@@ -1,7 +1,13 @@
 import { createServiceClient } from '@/lib/supabase/server';
-import { client } from '@/sanity/lib/client';
-import { appsProvisioningDetailsByIdsQuery } from '@/sanity/lib/queries';
 import { issuesServer } from '@/services/issues/server';
+import {
+  buildProvisioningDetails,
+  createPurchaseRecordServer,
+  ensureOrganizationAndBillingAddress,
+  fetchProvisioningAppsByIds,
+  sendPurchaseConfirmationEmail,
+  triggerAppProvisioning,
+} from '@/services/purchases/server';
 import { NextResponse } from 'next/server';
 
 type HubtelCheckoutPayload = {
@@ -229,102 +235,24 @@ export async function POST(request: Request) {
     const appProvisioningDetails = checkoutPayload.appProvisioningDetails || {};
     let organizationId = '';
 
-    if (checkoutPayload.isExistingOrg) {
-      const { data: existingOrg, error: orgLookupError } = await supabase
-        .from('organizations')
-        .select('id, name, email, phone')
-        .eq('email', billingDetails.organizationEmail)
-        .maybeSingle();
-
-      if (orgLookupError) {
-        await issuesServer.logDatabaseError(
-          orgLookupError.message,
-          'hubtel_checkout_fetch_org',
-          'organizations',
-          undefined,
-          { clientReference }
-        );
-      }
-
-      if (existingOrg?.id) {
-        organizationId = existingOrg.id;
-        const updates: Record<string, any> = {};
-
-        if (billingDetails.organizationName !== existingOrg.name) {
-          updates.name = billingDetails.organizationName;
-        }
-
-        if (billingDetails.organizationEmail !== existingOrg.email) {
-          updates.email = billingDetails.organizationEmail;
-        }
-
-        if (billingDetails.phoneNumber && billingDetails.phoneNumber !== existingOrg.phone) {
-          updates.phone = billingDetails.phoneNumber;
-        }
-
-        if (Object.keys(updates).length > 0) {
-          await supabase.from('organizations').update(updates).eq('id', organizationId);
-        }
-      }
-    }
-
-    if (!organizationId) {
-      const { data: newOrg, error: orgCreateError } = await supabase
-        .from('organizations')
-        .insert({
-          name: billingDetails.organizationName,
-          email: billingDetails.organizationEmail,
-          phone: billingDetails.phoneNumber,
-          status: 'active',
-          verificationStatus: 'pending',
-          address: {},
-        })
-        .select()
-        .single();
-
-      if (orgCreateError) {
-        await issuesServer.logDatabaseError(
-          orgCreateError.message,
-          'hubtel_checkout_create_org',
-          'organizations',
-          undefined,
-          { clientReference }
-        );
-        return NextResponse.json(
-          { error: 'Failed to create organization' },
-          { status: 500 }
-        );
-      }
-
-      organizationId = newOrg.id;
-    }
-
-    if (organizationId) {
-      const { data: existingAddresses } = await supabase
-        .from('billing_addresses')
-        .select('*')
-        .eq('organization_id', organizationId);
-
-      const addressExists = existingAddresses?.some(
-        (addr) =>
-          addr.street === billingDetails.address.street &&
-          addr.city === billingDetails.address.city &&
-          addr.state === billingDetails.address.state &&
-          addr.country === billingDetails.address.country &&
-          addr.postalCode === billingDetails.address.postalCode
+    try {
+      organizationId = await ensureOrganizationAndBillingAddress({
+        supabase,
+        billingDetails,
+        isExistingOrg: checkoutPayload.isExistingOrg,
+      });
+    } catch (orgError) {
+      await issuesServer.logDatabaseError(
+        orgError instanceof Error ? orgError.message : 'Organization update failed',
+        'hubtel_checkout_org_sync',
+        'organizations',
+        undefined,
+        { clientReference }
       );
-
-      if (!addressExists) {
-        await supabase.from('billing_addresses').insert({
-          organization_id: organizationId,
-          street: billingDetails.address.street,
-          city: billingDetails.address.city,
-          state: billingDetails.address.state,
-          country: billingDetails.address.country,
-          postalCode: billingDetails.address.postalCode,
-          isDefault: !existingAddresses || existingAddresses.length === 0,
-        });
-      }
+      return NextResponse.json(
+        { error: 'Failed to create organization' },
+        { status: 500 }
+      );
     }
 
     const mergedPaymentDetails = mergePaymentDetails(null, {
@@ -332,30 +260,23 @@ export async function POST(request: Request) {
       parsedData: normalized.parsedData,
     });
 
-    const { data: createdPurchase, error: purchaseError } = await supabase
-      .from('purchases')
-      .insert({
-        organization_id: organizationId,
-        payment_reference: clientReference,
+    let createdPurchase;
+    try {
+      createdPurchase = await createPurchaseRecordServer({
+        supabase,
+        organizationId,
+        clientReference,
         amount: checkoutPayload.total,
         status: normalized.status,
-        items: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.product?.price || 0,
-          appId: item.product?.slug,
-        })),
-        payment_provider: 'hubtel',
-        payment_method: normalized.paymentMethod,
-        external_transaction_id: normalized.externalTransactionId,
-        payment_details: mergedPaymentDetails,
-      })
-      .select('id, status, organization_id, items, amount')
-      .single();
-
-    if (purchaseError) {
+        items,
+        paymentProvider: 'hubtel',
+        paymentMethod: normalized.paymentMethod,
+        externalTransactionId: normalized.externalTransactionId,
+        paymentDetails: mergedPaymentDetails,
+      });
+    } catch (purchaseError) {
       await issuesServer.logDatabaseError(
-        purchaseError.message,
+        purchaseError instanceof Error ? purchaseError.message : 'Purchase create failed',
         'hubtel_checkout_create_purchase',
         'purchases',
         undefined,
@@ -370,19 +291,11 @@ export async function POST(request: Request) {
     if (billingDetails?.organizationEmail) {
       const origin = new URL(request.url).origin;
       try {
-        await fetch(`${origin}/api/purchases/confirmation-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            organizationDetails: {
-              organizationName: billingDetails.organizationName || '',
-              organizationEmail: billingDetails.organizationEmail,
-            },
-            items,
-            total: checkoutPayload.total,
-          }),
+        await sendPurchaseConfirmationEmail({
+          origin,
+          billingDetails,
+          items,
+          total: checkoutPayload.total,
         });
       } catch (emailError) {
         await issuesServer.logEmailError(
@@ -401,37 +314,18 @@ export async function POST(request: Request) {
     if (Object.keys(appProvisioningDetails).length > 0) {
       try {
         const productIds = items.map((item) => item.productId);
-        const appsWithProvisionDetails = await client.fetch(
-          appsProvisioningDetailsByIdsQuery,
-          { ids: productIds }
-        );
-
-        const provisioningDetails = appsWithProvisionDetails.reduce(
-          (acc: Record<string, any>, app: Record<string, any>) => {
-            acc[app._id] = {
-              id: app._id,
-              name: app.title,
-              ...appProvisioningDetails[app._id],
-              ...app.appProvisioning,
-              platforms: app.platforms || {},
-              webAppUrl: app.webAppUrl || '',
-            };
-            return acc;
-          },
-          {}
+        const appsWithProvisionDetails = await fetchProvisioningAppsByIds(productIds);
+        const provisioningDetails = buildProvisioningDetails(
+          appsWithProvisionDetails,
+          appProvisioningDetails
         );
 
         const origin = new URL(request.url).origin;
-        await fetch(`${origin}/api/app-provisioning`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            organizationId,
-            billingDetails,
-            appProvisioningDetails: provisioningDetails,
-          }),
+        await triggerAppProvisioning({
+          origin,
+          organizationId,
+          billingDetails,
+          appProvisioningDetails: provisioningDetails,
         });
       } catch (provisioningError) {
         await issuesServer.logApiError(
